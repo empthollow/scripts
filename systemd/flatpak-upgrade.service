@@ -1,0 +1,5 @@
+[Unit]
+Description=flatpak-upgrade
+[Service]
+User=empthollow
+ExecStart=flatpak update -y

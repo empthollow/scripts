@@ -1,0 +1,60 @@
+#!/bin/bash
+
+set -e  # Exit on any error
+
+# Stop Open vSwitch and Neutron Open vSwitch Agent
+systemctl stop neutron-openvswitch-agent openvswitch
+
+echo "Clearing existing Open vSwitch configuration..."
+ovs-vsctl --if-exists del-br br-int
+ovs-vsctl --if-exists del-br br-tun
+ovs-vsctl --if-exists del-br br-ex
+ovs-vsctl del-manager
+rm -rf /etc/openvswitch/conf.db
+
+# Restart Open vSwitch
+echo "Restarting Open vSwitch..."
+systemctl restart openvswitch
+
+# Verify OVS is running
+systemctl status openvswitch --no-pager
+
+# Wait for OVS to fully initialize
+sleep 5
+
+echo "Ensuring Neutron Open vSwitch Agent is configured..."
+
+# Ensure Neutron Open vSwitch agent has the correct settings
+CONFIG_FILE="/etc/neutron/plugins/ml2/openvswitch_agent.ini"
+
+sed -i '/^\[ovs\]/,/^\[/ s/^bridge_mappings.*/bridge_mappings = provider:br-ex/' "$CONFIG_FILE"
+sed -i '/^\[ovs\]/,/^\[/ s/^local_ip.*/local_ip = 172.22.2.22/' "$CONFIG_FILE"
+sed -i '/^\[ovs\]/,/^\[/ s/^tunnel_types.*/tunnel_types = vxlan/' "$CONFIG_FILE"
+sed -i '/^\[ovs\]/,/^\[/ s/^tunnel_bridge.*/tunnel_bridge = br-tun/' "$CONFIG_FILE"
+sed -i '/^\[securitygroup\]/,/^\[/ s/^enable_security_group.*/enable_security_group = true/' "$CONFIG_FILE"
+sed -i '/^\[securitygroup\]/,/^\[/ s/^firewall_driver.*/firewall_driver = openvswitch/' "$CONFIG_FILE"
+
+echo "Restarting Neutron Open vSwitch Agent..."
+systemctl restart neutron-openvswitch-agent
+
+# Verify Neutron OVS agent is running
+systemctl status neutron-openvswitch-agent --no-pager
+
+# Check if Neutron created required bridges
+echo "Checking Open vSwitch bridges..."
+ovs-vsctl show
+
+# Connect enp2s0 to br-ex if not already added
+if ! ovs-vsctl list-ports br-ex | grep -q "enp2s0"; then
+    echo "Adding enp2s0 to br-ex..."
+    ovs-vsctl add-port br-ex enp2s0
+    ip link set enp2s0 up
+fi
+
+# Confirm VLAN settings
+echo "Checking VLAN tagging on ports..."
+ovs-vsctl list port br-ex
+ovs-vsctl list port br-int
+
+echo "Setup complete. Open vSwitch should now be correctly configured."
+

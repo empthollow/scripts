@@ -18,9 +18,10 @@ netcycle()
 echo "press r to restart network or enter to exit"
 read nmrestart
 if [ "$nmrestart" == "r" ]; then
-	ip route flush
-       nmcli con down $conname1 && nmcli con up $conname1	
-       nmcli con down $conname2 && nmcli con up $conname2	
+	ip route flush cache
+#	ip rule flush
+	nmcli con down $conname1 && nmcli con up $conname1	
+	nmcli con down $conname2 && nmcli con up $conname2	
 fi
 }
 

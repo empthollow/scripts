@@ -1,0 +1,547 @@
+#!/bin/bash
+
+# Error handling function
+handle_error() {
+  echo "Execution error on line $1. Exiting..."
+  exit 1
+}
+
+# Trap errors and call the error handler
+trap 'handle_error $LINENO' ERR
+
+[ "$(id -u)" -ne "0" ] && echo "you are not root: use 'sudo -s'" && exit
+
+# set variables
+default="no" # yes or no
+priority= #110
+iface=
+addr= # assigned static IP with CIDR notation
+base_addr=${addr%%/*} # assigned static IP without CIDR notation
+subnet=
+conname=
+
+restart_profile()
+{
+# Safe restart helper functions
+# restart_profile <profile> [rollback_seconds]
+#   - brings the given NetworkManager connection down and back up
+#   - starts a rollback timer that will attempt to bring the profile back up
+#     after the given timeout if the manual restart fails (useful for remote hosts)
+    local profile="$1"
+    local timeout="${2:-30}"
+    if [ -z "$profile" ]; then
+        echo "restart_profile: no profile specified"
+        return 1
+    fi
+
+    echo "Restarting profile '$profile' (no rollback)."
+
+    # Clean up routing state related to this profile only.
+    echo "Cleaning routing state for profile '$profile' before restart..."
+    local dev snip base_ip subnet gate_ip table_name
+    dev=$(nmcli -g connection.interface-name connection show "$profile" 2>/dev/null || true)
+    table_name=""
+
+    # If we have a snippet for this interface, parse the values added by add_dispatch_snippet()
+    if [ -n "$dev" ]; then
+        snip="/etc/NetworkManager/dispatcher.d/99-add-routes.d/${dev}.sh"
+        if [ -f "$snip" ]; then
+            base_ip=$(grep -oE 'from [0-9]{1,3}(\.[0-9]{1,3}){3}' "$snip" | awk '{print $2}' | head -n1)
+            [ -z "$base_ip" ] && base_ip=$(grep -oE 'src [0-9]{1,3}(\.[0-9]{1,3}){3}' "$snip" | awk '{print $2}' | head -n1)
+            subnet=$(grep -oE '[0-9]{1,3}(\.[0-9]{1,3}){3}/[0-9]{1,2}' "$snip" | head -n1)
+            gate_ip=$(grep -oE 'default via [0-9]{1,3}(\.[0-9]{1,3}){3}' "$snip" | awk '{print $3}' | head -n1)
+            [ -z "$gate_ip" ] && gate_ip=$(grep -oE '[0-9]{1,3}(\.[0-9]{1,3}){3} dev' "$snip" | awk '{print $1}' | head -n1)
+            table_name="${dev}_table"
+        fi
+    fi
+
+    if [ -n "$subnet" ] || [ -n "$gate_ip" ]; then
+        echo "Removing routes/rules added for profile '$profile' (interface: ${dev:-unknown})"
+        [ -n "$subnet" ] && ip route del "$subnet" dev "$dev" table "$table_name" 2>/dev/null || true
+        [ -n "$subnet" ] && ip route del "$subnet" dev "$dev" 2>/dev/null || true
+        [ -n "$gate_ip" ] && ip route del "$gate_ip" dev "$dev" 2>/dev/null || true
+        [ -n "$gate_ip" ] && ip route del default via "$gate_ip" dev "$dev" table "$table_name" 2>/dev/null || true
+        if [ -n "$base_ip" ]; then
+            if ip rule show | grep -q "from $base_ip lookup $table_name"; then
+                ip rule del from "$base_ip" lookup "$table_name" 2>/dev/null || true
+            fi
+        fi
+    else
+        # Fallback: flush routes for the device if we couldn't find snippet info
+        if [ -n "$dev" ]; then
+            echo "Could not parse snippet for $dev; flushing routes for device $dev"
+            ip route flush dev "$dev" 2>/dev/null || true
+        else
+            echo "Could not determine device for profile $profile; no per-profile routes flushed"
+        fi
+    fi
+
+    # Try graceful down/up
+    nmcli connection down id "$profile" >/dev/null 2>&1 || true
+    if nmcli connection up id "$profile" >/dev/null 2>&1; then
+        echo "Profile '$profile' restarted successfully"
+        return 0
+    else
+        echo "Profile restart command failed"
+        return 2
+    fi
+}
+
+restart_network_safe()
+{
+# restart_network_safe [rollback_seconds]
+#   - toggles NetworkManager networking off/on with a rollback timer
+#   - warns about remote SSH before proceeding
+    local timeout="${1:-30}"
+    echo "WARNING: restarting all networking may drop SSH and other connections."
+    echo -n "Type 'y' to continue and allow networking restart, or press Enter to cancel: "
+    read -r confirm
+    if [ "${confirm,,}" != "y" ] && [ "${confirm,,}" != "yes" ]; then
+        echo "Cancelled network restart."
+        return 1
+    fi
+
+    echo "Restarting networking (no rollback)."
+    # Ensure NetworkManager is present
+    if command -v nmcli >/dev/null 2>&1; then
+        # Clean up routing cache before toggling networking down
+        echo "Cleaning routing cache before restarting networking..."
+        ip route flush cache 2>/dev/null || true
+
+        nmcli networking off >/dev/null 2>&1 || true
+        if nmcli networking on >/dev/null 2>&1; then
+            echo "Networking restarted successfully"
+            return 0
+        else
+            echo "Network restart command failed"
+            return 2
+        fi
+    else
+        echo "nmcli not found; cannot perform NetworkManager restart"
+        return 3
+    fi
+}
+
+add_dispatch_snippet()
+{
+# Add or remove dispatcher snippets for per-interface routing
+    # args: iface conname base_ip subnet gate_ip priority make_default
+    local iface="$1"; local conname="$2"; local base_ip="$3"; local subnet="$4"; local gate_ip="$5"; local priority="$6"; local make_default="$7"
+    local dir="/etc/NetworkManager/dispatcher.d/99-add-routes.d"
+    mkdir -p "$dir"
+    local tmp
+    tmp=$(mktemp /tmp/route.snip.XXXXXX) || return 1
+    cat > "$tmp" <<EOF
+#!/bin/bash
+# snippet for $iface
+[ "\$1" = "$iface" ] || exit 0
+[ "\$2" = "up" ] || exit 0
+
+# Ensure routing table exists (id used is priority or default 100)
+# Table name convention: ${iface}_table
+grep -qEo "[0-9]{1,5} ${iface}_table" /etc/iproute2/rt_tables || echo "${priority:-100} ${iface}_table" >> /etc/iproute2/rt_tables
+
+# Add subnet route (accepts host/CIDR or network/CIDR)
+ip route replace $subnet dev $iface src $base_ip 2>/dev/null || true
+# Add policy-table subnet route
+ip route replace $subnet dev $iface src $base_ip table ${iface}_table 2>/dev/null || true
+
+# Add gateway host route
+ip route replace $gate_ip dev $iface 2>/dev/null || true
+
+# Add rule to use policy table for traffic from base_ip (idempotent)
+if ! ip rule show | grep -q "from $base_ip lookup ${iface}_table"; then
+    ip rule add priority ${priority:-100} from $base_ip lookup ${iface}_table 2>/dev/null || true
+fi
+
+EOF
+
+        if [ "$make_default" = "yes" ] || [ "$make_default" = "y" ]; then
+            cat >> "$tmp" <<EOF
+    # Add default route in policy table
+    ip route replace default via $gate_ip dev $iface table ${iface}_table 2>/dev/null || true
+EOF
+    fi
+
+    chmod 755 "$tmp"
+    mv "$tmp" "$dir/${iface}.sh"
+    chown root:root "$dir/${iface}.sh" || true
+}
+
+remove_dispatch_snippet()
+{
+    local iface="$1"
+    local base_ip="$2"
+    local subnet="$3"
+    local gate_ip="$4"
+    local table_name="${iface}_table"
+    local file="/etc/NetworkManager/dispatcher.d/99-add-routes.d/${iface}.sh"
+
+    if [ ! -f "$file" ]; then
+        echo "snippet $file not found, nothing to remove"
+        return 0
+    fi
+
+    # If some parameters aren't provided, attempt to parse them from the snippet
+    if [ -z "$base_ip" ] || [ -z "$subnet" ] || [ -z "$gate_ip" ]; then
+        [ -z "$base_ip" ] && base_ip=$(grep -oE 'from [0-9]{1,3}(\.[0-9]{1,3}){3}' "$file" | awk '{print $2}' | head -n1)
+        [ -z "$base_ip" ] && base_ip=$(grep -oE 'src [0-9]{1,3}(\.[0-9]{1,3}){3}' "$file" | awk '{print $2}' | head -n1)
+        [ -z "$subnet" ] && subnet=$(grep -oE '[0-9]{1,3}(\.[0-9]{1,3}){3}/[0-9]{1,2}' "$file" | head -n1)
+        [ -z "$gate_ip" ] && gate_ip=$(grep -oE 'default via [0-9]{1,3}(\.[0-9]{1,3}){3}' "$file" | awk '{print $3}' | head -n1)
+        [ -z "$gate_ip" ] && gate_ip=$(grep -oE '[0-9]{1,3}(\.[0-9]{1,3}){3} dev' "$file" | awk '{print $1}' | head -n1)
+    fi
+
+    # Remove ip rule if it exists
+    if [ -n "$base_ip" ]; then
+        if ip rule show | grep -q "from $base_ip lookup $table_name"; then
+            ip rule del from "$base_ip" lookup "$table_name" 2>/dev/null || true
+        fi
+    fi
+
+    # Remove routes (policy table and main table)
+    if [ -n "$subnet" ]; then
+        ip route del "$subnet" dev "$iface" table "$table_name" 2>/dev/null || true
+        ip route del "$subnet" dev "$iface" 2>/dev/null || true
+    fi
+    if [ -n "$gate_ip" ]; then
+        ip route del "$gate_ip" dev "$iface" 2>/dev/null || true
+        ip route del default via "$gate_ip" dev "$iface" table "$table_name" 2>/dev/null || true
+    fi
+
+    # Remove the table entry from /etc/iproute2/rt_tables if it matches
+    if grep -qE "[0-9]{1,5} ${table_name}" /etc/iproute2/rt_tables; then
+        # remove lines that end with the table name
+        sed -i".bak" "/[[:space:]]${table_name}\$/d" /etc/iproute2/rt_tables || true
+    fi
+
+    # Finally remove the snippet file
+    rm -f "$file"
+}
+
+purgeip()
+{
+    # Remove current IPs from NM profile and the associated interface
+    # Usage: purgeip [--force]
+    local force="${1:-}";
+    # Required: $conname must be set (profile name)
+    if [ -z "$conname" ]; then
+        echo "purgeip: no connection/profile name provided"
+        return 1
+    fi
+
+    # Try to determine the interface name for the connection
+    local dev
+    dev=$(nmcli -g connection.interface-name connection show "$conname" 2>/dev/null || true)
+    if [ -z "$dev" ]; then
+        # Fall back to searching active connections for matching name
+        dev=$(nmcli -t -f NAME,DEVICE connection show --active | awk -F: -v name="$conname" '$1==name {print $2; exit}')
+    fi
+
+    echo "Connection: $conname"
+    [ -n "$dev" ] && echo "Device: $dev"
+
+    # Show configured (persistent) IPv4 addresses and live IPv4 addresses
+    local cfg_ips live_ips
+    cfg_ips=$(nmcli -g ipv4.addresses connection show "$conname" 2>/dev/null || true)
+    echo "Configured IPv4 on profile: ${cfg_ips:-(none)}"
+    if [ -n "$dev" ]; then
+        live_ips=$(ip -4 -o addr show dev "$dev" | awk '{print $4}')
+        echo "Live IPv4 on device $dev: ${live_ips:-(none)}"
+    fi
+
+    if [ "$force" != "--force" ]; then
+        echo "WARNING: This will remove persistent IPv4 addresses from the profile and bring the connection down/up. This may drop remote sessions."
+        echo -n "Type 'y' to continue, or press Enter to cancel: "
+        read -r ok
+        if [ "${ok,,}" != "y" ] && [ "${ok,,}" != "yes" ]; then
+            echo "Aborted by user."
+            return 1
+        fi
+    else
+        echo "Force mode: proceeding without interactive confirmation"
+    fi
+
+    # 1) Remove persistent addresses from the profile
+    echo "Clearing persistent IPv4 settings on NM connection '$conname'..."
+    nmcli connection modify "$conname" ipv4.addresses "" ipv4.gateway "" ipv4.method auto >/dev/null 2>&1 || true
+
+    # 2) Reload connections and bring the connection down/up so NM applies the empty config
+    nmcli connection reload >/dev/null 2>&1 || true
+    echo "Bringing connection $conname down then up to apply changes..."
+    nmcli connection down id "$conname" >/dev/null 2>&1 || true
+    nmcli connection up id "$conname" >/dev/null 2>&1 || true
+
+    # 3) Verify live addresses removed; if any remain, delete them directly
+    if [ -n "$dev" ]; then
+        local nip
+        for nip in $(ip -4 -o addr show dev "$dev" | awk '{print $4}'); do
+            echo "Removing remaining live address $nip from $dev"
+            ip addr del "$nip" dev "$dev" 2>/dev/null || true
+        done
+    fi
+
+    # 4) If there's a dispatcher snippet for this iface, remove it and its rules/routes
+    if [ -n "$dev" ] && [ -f "/etc/NetworkManager/dispatcher.d/99-add-routes.d/${dev}.sh" ]; then
+        echo "Found dispatcher snippet for $dev; removing associated routes/rules and snippet"
+        remove_dispatch_snippet "$dev"
+    fi
+
+    echo "Purge complete for connection '$conname'${dev:+ (device $dev)}"
+}
+
+routeset()
+{
+    # If a subnet was provided externally, respect it; otherwise, try to compute it from $addr
+    # If addr is provided as an IP/CIDR (e.g. 192.0.2.5/24) calculate the network (CIDR)
+    # and set it to $subnet (e.g. 192.0.2.0/24). Prefer python3, then ipcalc, else keep addr.
+    if [ -z "${subnet:-}" ]; then
+        if [ -n "${addr:-}" ] && [[ "$addr" == */* ]]; then
+            if command -v python3 >/dev/null 2>&1; then
+                subnet=$(python3 -c "import ipaddress,sys; print(ipaddress.ip_network(sys.argv[1], strict=False))" "$addr")
+            elif command -v ipcalc >/dev/null 2>&1; then
+                subnet=$(ipcalc -n "$addr" | awk -F'=' '/Network/ {print $2}')
+            elif command -v python >/dev/null 2>&1; then
+                subnet=$(python -c "import ipaddress,sys; print(ipaddress.ip_network(sys.argv[1], strict=False))" "$addr")
+            else
+                # Last resort: ask the user to provide the network CIDR (e.g. 192.0.2.0/24)
+                echo "Unable to compute network CIDR for $addr (missing python3/ipcalc)."
+                echo -n "Please enter the subnet/network in CIDR form (e.g. 192.0.2.0/24): "
+                read -r subnet
+                # validate basic IPv4/CIDR format; re-prompt until valid
+                while [[ ! "$subnet" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}/[0-9]{1,2}$ ]]; do
+                    echo "Invalid format. Expected something like 192.0.2.0/24"
+                    echo -n "Enter subnet (CIDR): "
+                    read -r subnet
+                done
+            fi
+        fi
+    fi
+
+    # Ensure base_addr is set when possible (strip CIDR if present)
+    if [ -z "${base_addr:-}" ] && [ -n "${addr:-}" ]; then
+        base_addr=${addr%%/*}
+    fi
+
+# check for route tables
+
+if grep -qEo "[0-9]{1,5} $(echo $iface)_table" /etc/iproute2/rt_tables; then
+    echo "the table $(echo $iface)_table exists"
+else
+    echo "${priority:-100} ${iface}_table" >> /etc/iproute2/rt_tables;
+    echo "added $(echo $iface)_table"
+fi
+
+# set and test routes
+
+echo "The following commands will be executed if you choose to continue:"
+echo "  ip route replace $subnet dev $iface src $base_addr"
+echo "  ip route replace $subnet dev $iface src $base_addr table ${iface}_table"
+echo "  ip route replace $gate_ip dev $iface"
+echo "  ip rule add priority ${priority:-100} from $base_addr lookup ${iface}_table"
+if [ "${default,,}" = "yes" ] || [ "${default,,}" = "y" ]; then
+    echo "  ip route replace default via $gate_ip dev $iface table ${iface}_table"
+fi
+echo ""
+echo "Type 'y' to run the commands and test routing for $iface, or press Enter to cancel."
+echo -n "> "
+read testyn
+
+if [ "${testyn,,}" != "y" ] && [ "${testyn,,}" != "yes" ]; then
+    echo "exiting without setting routes for $iface"
+    return
+    else
+    echo "setting routes for $iface"
+
+    # Ensure routing table exists (id used is priority or default 100)
+    grep -qEo "[0-9]{1,5} ${iface}_table" /etc/iproute2/rt_tables || echo "${priority:-100} ${iface}_table" >> /etc/iproute2/rt_tables
+
+    # Add subnet route (main) and policy-table subnet route (idempotent)
+    ip route replace $subnet dev $iface src $base_addr
+    ip route replace $subnet dev $iface src $base_addr table ${iface}_table
+
+    # Add gateway host route
+    ip route replace $gate_ip dev $iface
+
+    # Add ip rule only if missing (matches add_dispatch_snippet)
+    if ! ip rule show | grep -q "from $base_addr lookup ${iface}_table"; then
+        ip rule add priority ${priority:-100} from $base_addr lookup ${iface}_table
+    fi
+
+    if [ "${default,,}" = "yes" ] || [ "${default,,}" = "y" ]; then
+        ip route replace default via $gate_ip dev $iface table ${iface}_table
+    fi
+    # test 
+    echo "testing route setup for $iface"
+    ping -c 4 -I $base_addr $gate_ip && echo "route set successfully for $iface" || echo "route test failed for $iface"
+    ping -c 4 -I $base_addr 4.4.4.4 && echo "external route set successfully for $iface" || echo "external route test failed for $iface"
+fi
+
+}
+
+initialize()
+{
+
+# Warn user before overwriting /etc/NetworkManager/dispatcher.d/99-add-routes
+echo "WARNING: this operation will overwrite any existing file named /etc/NetworkManager/dispatcher.d/99-add-routes."
+echo -n "Type 'y' to continue and allow overwrite, or press Enter to cancel: "
+read -r confirm_overwrite
+if [ "${confirm_overwrite,,}" != "y" ] && [ "${confirm_overwrite,,}" != "yes" ]; then
+    echo "Aborting: existing /etc/NetworkManager/dispatcher.d/99-add-routes will NOT be changed."
+    return 1
+fi
+
+### check for ip forward
+if [ "$(cat /proc/sys/net/ipv4/ip_forward)" == "0" ]; then
+	echo "1" > /proc/sys/net/ipv4/ip_forward
+	grep -qFo "net.ipv4.ip_forward = 1" /etc/sysctl.d/99-sysctl.conf || echo "net.ipv4.ip_forward = 1" | tee -a /etc/sysctl.d/99-sysctl.conf
+	echo "enabled ip forwarding"
+else
+	echo "ip forwarding is enabled"
+fi
+# Ensure snippet directory exists
+mkdir -p /etc/NetworkManager/dispatcher.d/99-add-routes.d
+cat > /etc/NetworkManager/dispatcher.d/99-add-routes <<'EOF'
+#!/bin/bash
+# Main dispatcher script that sources per-interface snippets
+# This script is executed by NetworkManager with args: <ifname> <action>
+SNIPPET_DIR="/etc/NetworkManager/dispatcher.d/99-add-routes.d"
+
+if [ "${2}" != "up" ]; then
+    exit 0
+fi
+
+if [ -d "${SNIPPET_DIR}" ]; then
+    for f in "${SNIPPET_DIR}"/*.sh; do
+        [ -r "${f}" ] || continue
+        # Run each snippet in a subshell to contain failures and side-effects
+        ( set -e; . "${f}" )
+    done
+fi
+EOF
+chmod 755 /etc/NetworkManager/dispatcher.d/99-add-routes
+echo "created main dispatcher /etc/NetworkManager/dispatcher.d/99-add-routes and snippet dir"
+}
+
+# Command-line dispatcher
+usage()
+{
+    cat <<USAGE
+Usage: ipcast <command> [args]
+
+Commands:
+  netcycle [profile|all|<profile-name>]   Restart networking or a specific profile
+  route [key value ...]                   Add/test routes for an interface. Keys: dev addr subnet gate priority default conname
+  purge profile <profile-name>            Remove IPs from an NM profile (calls purgeip)
+  add snippet [key value ...]             Create a dispatcher snippet. Keys: iface conname base subnet gate priority default
+  remove snippet <iface>                  Remove dispatcher snippet for iface
+  initialize                              Create main dispatcher and snippet dir (interactive)
+  help                                    Show this message
+
+Examples:
+  ipcast netcycle all
+  ipcast netcycle eth0
+  ipcast route dev eth1 addr 192.0.2.5/24 gate 192.0.2.1 priority 110 default yes conname my-conn
+  ipcast purge profile my-conn
+  ipcast add snippet iface eth1 conname my-conn base 192.0.2.5/24 subnet 192.0.2.0/24 gate 192.0.2.1 priority 110 default yes
+  ipcast remove snippet eth1
+USAGE
+}
+
+if [ "$#" -lt 1 ]; then
+    usage
+    exit 0
+fi
+
+cmd="$1"; shift
+case "$cmd" in
+    netcycle)
+        if [ "${1}" = "all" ]; then
+            restart_network_safe
+        elif [ -n "$1" ]; then
+            restart_profile "$1"
+        fi
+        ;;
+    route)
+        # parse key/value pairs
+        while [ "$#" -gt 0 ]; do
+            case "$1" in
+                dev) iface="$2"; shift 2;;
+                addr|ip) addr="$2"; shift 2;;
+                subnet) subnet="$2"; shift 2;;
+                gate|gateway) gate_ip="$2"; shift 2;;
+                priority) priority="$2"; shift 2;;
+                default) default="$2"; shift 2;;
+                conname) conname="$2"; shift 2;;
+                *) echo "Unknown token: $1"; usage; exit 2;;
+            esac
+        done
+        # export or set variables expected by routeset()
+        iface="${iface:-$IFACE}"
+        addr="${addr:-$ADDR}"
+        subnet="${subnet:-$SUBNET}"
+        gate_ip="${gate_ip:-$GATE_IP}"
+        priority="${priority:-$PRIORITY}"
+        default="${default:-$DEFAULT}"
+        conname="${conname:-$CONNAME}"
+        routeset
+        ;;
+    purge)
+        if [ "$1" = "profile" ]; then
+            shift
+            force_flag=""
+            # accept optional flags before the profile name
+            while [ "$#" -gt 0 ] && [[ "$1" == --* ]]; do
+                case "$1" in
+                    --force) force_flag="--force"; shift ;;
+                    *) echo "Unknown option: $1"; exit 2 ;;
+                esac
+            done
+            if [ -n "$1" ]; then
+                conname="$1"
+                purgeip "$force_flag"
+            else
+                echo "Usage: ipcast purge profile [--force] <profile-name>"; exit 2
+            fi
+        else
+            echo "Usage: ipcast purge profile [--force] <profile-name>"; exit 2
+        fi
+        ;;
+    add)
+        if [ "$1" = "snippet" ]; then
+            shift
+            while [ "$#" -gt 0 ]; do
+                case "$1" in
+                    iface) iface="$2"; shift 2;;
+                    conname) conname="$2"; shift 2;;
+                    base) base_ip="$2"; shift 2;;
+                    subnet) subnet="$2"; shift 2;;
+                    gate) gate_ip="$2"; shift 2;;
+                    priority) priority="$2"; shift 2;;
+                    default) default="$2"; shift 2;;
+                    *) echo "Unknown token: $1"; usage; exit 2;;
+                esac
+            done
+            add_dispatch_snippet "$iface" "$conname" "$base_ip" "$subnet" "$gate_ip" "$priority" "$default"
+        else
+            echo "Unsupported add target: $1"; exit 2
+        fi
+        ;;
+    remove)
+        if [ "$1" = "snippet" ] && [ -n "$2" ]; then
+            remove_dispatch_snippet "$2"
+        else
+            echo "Usage: ipcast remove snippet <iface>"; exit 2
+        fi
+        ;;
+    initialize)
+        initialize
+        ;;
+    help|-h|--help)
+        usage
+        ;;
+    *)
+        echo "Unknown command: $cmd"; usage; exit 2
+        ;;
+esac
+
+exit 0

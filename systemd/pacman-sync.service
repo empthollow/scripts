@@ -1,0 +1,5 @@
+[Unit]
+Description=pacman-sync
+[Service]
+User=root
+ExecStart=pacman -Syy

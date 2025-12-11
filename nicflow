@@ -1,0 +1,98 @@
+#!/bin/bash
+
+# This script adds routes for a non-default network interface.
+# It will ask for the subnet, gateway, and interface name,
+# and then use that information to configure the routing table.
+#
+# This script must be run as root or with sudo.
+
+# Check for root privileges
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run as root or with sudo."
+  exit 1
+fi
+
+# Prompt for user input
+echo "--- Existing Route Tables ---"
+cat /etc/iproute2/rt_tables
+echo "-----------------------------"
+read -p "Enter the routing table ID (e.g., 101): " TABLE_ID
+read -p "Enter the routing table name (e.g., custom1): " TABLE_NAME
+read -p "Enter the subnet (e.g., 192.168.1.0/24): " SUBNET
+read -p "Enter the gateway IP (e.g., 192.168.1.1): " GATEWAY
+read -p "Enter the interface name (e.g., eth1): " INTERFACE
+
+# --- Configuration ---
+# The table ID and name are now provided by the user.
+
+# --- Validation ---
+if ! ip link show "$INTERFACE" > /dev/null 2>&1; then
+    echo "Error: Interface '$INTERFACE' not found."
+    exit 1
+fi
+
+IP_ADDR=$(ip -4 addr show "$INTERFACE" | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+if [ -z "$IP_ADDR" ]; then
+    echo "Error: Could not find an IPv4 address for interface '$INTERFACE'."
+    exit 1
+fi
+
+# --- Setup ---
+
+# Add the table to /etc/iproute2/rt_tables if it doesn't exist
+if ! grep -q "$TABLE_NAME" /etc/iproute2/rt_tables; then
+    echo "Adding routing table '$TABLE_NAME' to /etc/iproute2/rt_tables..."
+    echo "$TABLE_ID $TABLE_NAME" >> /etc/iproute2/rt_tables
+fi
+
+echo "--- Configuration Summary ---"
+echo "Interface: $INTERFACE"
+echo "IP Address: $IP_ADDR"
+echo "Subnet: $SUBNET"
+echo "Gateway: $GATEWAY"
+echo "Routing Table: $TABLE_NAME (ID: $TABLE_ID)"
+echo "-----------------------------"
+
+# --- Execute IP Commands ---
+
+# echo "Flushing table $TABLE_NAME..."
+# ip route flush table "$TABLE_NAME"
+
+echo "Adding route for subnet $SUBNET to table $TABLE_NAME..."
+ip route add "$SUBNET" dev "$INTERFACE" src "$IP_ADDR" table "$TABLE_NAME"
+
+echo "Adding default route via $GATEWAY to table $TABLE_NAME..."
+ip route add default via "$GATEWAY" dev "$INTERFACE" table "$TABLE_NAME"
+
+echo "Flushing route cache..."
+ip route flush cache
+
+# Add rule for traffic from the interface's IP
+if ! ip rule | grep -q "from $IP_ADDR lookup $TABLE_NAME"; then
+    echo "Adding rule for traffic from $IP_ADDR..."
+    ip rule add priority $TABLE_ID from "$IP_ADDR" table "$TABLE_NAME"
+else
+    echo "Rule for traffic from $IP_ADDR already exists."
+fi
+
+echo "Configuration applied successfully."
+echo "You can view the table with: ip route show table $TABLE_NAME"
+echo "You can view the rules with: ip rule show"
+
+echo ""
+echo "--- Generated Script ---"
+cat << EOF
+#!/bin/bash
+# Commands to apply this configuration again.
+
+# Add table to /etc/iproute2/rt_tables
+echo "$TABLE_ID $TABLE_NAME" >> /etc/iproute2/rt_tables
+
+# Add routes and rules
+ip route add $SUBNET dev $INTERFACE src $IP_ADDR table $TABLE_NAME
+ip route add default via $GATEWAY dev $INTERFACE table $TABLE_NAME
+ip rule add from $IP_ADDR table $TABLE_NAME
+ip route flush cache
+EOF
+echo "------------------------"
+

@@ -1,0 +1,5 @@
+[Unit]
+Description=spotify-restart
+[Service]
+User=empthollow
+ExecStart=killall spotify && sleep 2 && flatpak run com.spotify.Client

@@ -1,0 +1,11 @@
+[Unit]
+Description=pacman -Syy timer
+
+[Timer]
+OnBootSec=5min
+OnCalendar=Sat *-*-* 00:05:30
+Unit=pacman-upgrade.service
+
+[Install]
+WantedBy=multi-user.target
+

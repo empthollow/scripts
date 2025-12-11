@@ -1,0 +1,289 @@
+Script started on 2025-02-09 06:49:31-06:00 [TERM="screen" TTY="/dev/pts/6" COLUMNS="85" LINES="28"]
+kshoestring@fractal:~/scripts\[?2004h[1;33mshoestring[1;32m@fractal [1;32mscripts $[m tmas
+[?2004lbash: tmas: command not found
+kshoestring@fractal:~/scripts\[?2004h[1;33mshoestring[1;32m@fractal [1;32mscripts $[m tmas[Kollama run granite-code:8btma[Ks[Kls
+[?2004l[0m[01;32mcast[0m  [01;34mgithelpers[0m  [01;32mmntchroot[0m  README.md  typescript
+kshoestring@fractal:~/scripts\[?2004h[1;33mshoestring[1;32m@fractal [1;32mscripts $[m ls .ssh
+[?2004lls: cannot access '.ssh': No such file or directory
+kshoestring@fractal:~/scripts\[?2004h[1;33mshoestring[1;32m@fractal [1;32mscripts $[m cd ..
+[?2004lkshoestring@fractal:~\[?2004h[1;33mshoestring[1;32m@fractal [1;32m~ $[m ls .ssh
+[?2004lauthorized_keys  github  known_hosts  known_hosts.old  restack
+kshoestring@fractal:~\[?2004h[1;33mshoestring[1;32m@fractal [1;32m~ $[m ls
+[?2004larchxml-bootissue  [0m[01;34mcheatnotes[0m      [01;32mcos-node-setup-file20250116[0m  [01;34mscripts[0m
+[01;34mbin[0m                [01;34mcos-node-setup[0m  null                         ustack
+kshoestring@fractal:~\[?2004h[1;33mshoestring[1;32m@fractal [1;32m~ $[m vin[Km .sshco[K[K/config 
+[?2004l[?1049h[?1h=[1;28r[23m[24m[0m[H[J[?25l[28;1H".ssh/config" 26L, 379B[2;1H▽[6n[2;1H  [3;1HPzz\[0%m[6n[3;1H           [1;1H[2;1H[32mHost[0m [31mfractal.lan[0m[2;17H[K[3;1H        [33mIdentityFile[0m ~/.ssh/fractal[3;36H[K[4;9H[33mUser[0m shoestring
+
+[32mHost[0m [31moxide5.lan[0m[7;9H[33mIdentityFile[0m ~/.ssh/oxide[31m5[0m[8;9H[33mUser[0m shoestring[9;9H[33mPort[0m [31m2020[0m
+
+[32mHost[0m [31mustack.lan[0m[12;9H[33mIdentityFile[0m ~/.ssh/ustack[13;9H[33mUser[0m stack
+
+[32mHost[0m [31mgithub.com[0m[16;9H[33mIdentityFile[0m ~/.ssh/github[17;9H[33mUser[0m git
+
+[32mHost[0m [31msandbox.lan[0m[20;9H[33mIdentityFile[0m ~/.ssh/cosnodes[21;9H[33mUser[0m shoestring
+
+[32mHost[0m [31mgolden.lan[0m[24;9H[33mIdentityFile[0m ~/.ssh/cosnodes[25;9H[33mUser[0m shoestring
+
+[1m[34m~                                                                                    [0m[28;68H1,0-1[9CAll[1;1H[34h[?25h[?25l[28;58Hj[1;1H[28;58H [2;1H[28;68H2,1  [2;1H[34h[?25h[?25l[28;58Hv[2;1H[28;58H1[2;1H[28;1H[1m-- VISUAL --[0m[28;13H[K[28;58H1[2;1H[28;68H2,1[11CAll[2;1H[34h[?25h[?25l[28;58Hj[2;1H[28;58H2[3;8H[2;1H[7m[32mHost[0m[7m [0m[7m[31mfractal.lan[0m[7m 
+       [0m[28;68H3,1-8[3;8H[34h[?25h[?25l[28;58Hj[3;8H[28;58H3[4;8H[3;8H[7m [0m[7m[33mIdentityFile[0m[7m ~/.ssh/fractal 
+       [0m[28;68H4[4;8H[34h[?25h[?25l[28;58Hj[4;8H[28;58H4[5;1H[4;8H[7m [0m[7m[33mUser[0m[7m shoestring [0m[28;68H5,0-1[5;1H[34h[?25h[?25l[28;58Hj[5;1H[28;58H5[6;1H[5;1H[7m [0m[28;68H6,1  [6;1H[34h[?25h[?25l[28;58Hj[6;1H[28;58H6[7;8H[6;1H[7m[32mHost[0m[7m [0m[7m[31moxide5.lan[0m[7m 
+       [0m[28;68H7,1-8[7;8H[34h[?25h[?25l[28;58Hj[7;8H[28;58H7[8;8H[7;8H[7m [0m[7m[33mIdentityFile[0m[7m ~/.ssh/oxide[0m[7m[31m5[0m[7m 
+       [0m[28;68H8[8;8H[34h[?25h[?25l[28;58Hj[8;8H[28;58H8[9;8H[8;8H[7m [0m[7m[33mUser[0m[7m shoestring 
+       [0m[28;68H9[9;8H[34h[?25h[?25l[28;58Hj[9;8H[28;58H9[10;1H[9;8H[7m [0m[7m[33mPort[0m[7m [0m[7m[31m2020[0m[7m [0m[28;68H10,0-1[10;1H[34h[?25h[?25l[28;58Hj[10;1H[28;58H10[11;1H[10;1H[7m [0m[28;69H1,1  [11;1H[34h[?25h[?25l[28;58Hj [11;1H[28;58H11[12;8H[11;1H[7m[32mHost[0m[7m [0m[7m[31mustack.lan[0m[7m 
+       [0m[28;69H2,1-8[12;8H[34h[?25h[?25l[28;58Hj [12;8H[28;58H12[13;8H[12;8H[7m [0m[7m[33mIdentityFile[0m[7m ~/.ssh/ustack 
+       [0m[28;69H3[13;8H[34h[?25h[?25l[28;58Hj [13;8H[28;58H13[14;1H[13;8H[7m [0m[7m[33mUser[0m[7m stack [0m[28;69H4,0-1[14;1H[34h[?25h[?25l[28;58Hj [14;1H[28;58H14[15;1H[14;1H[7m [0m[28;69H5,1  [15;1H[34h[?25h[?25l[28;58Hj [15;1H[28;58H15[16;8H[15;1H[7m[32mHost[0m[7m [0m[7m[31mgithub.com[0m[7m 
+       [0m[28;69H6,1-8[16;8H[34h[?25h[?25l[28;58Hj [16;8H[28;58H16[17;8H[16;8H[7m [0m[7m[33mIdentityFile[0m[7m ~/.ssh/github 
+       [0m[28;69H7[17;8H[34h[?25h[?25l[28;58Hj [17;8H[28;58H17[18;1H[17;8H[7m [0m[7m[33mUser[0m[7m git [0m[28;69H8,0-1[18;1H[34h[?25h[?25l[28;58Hk [18;1H[28;58H16[17;8H [33mUser[0m git[17;17H[K[28;69H7,1-8[17;8H[34h[?25h[?25l[28;58Hk [17;8H[28;58H15[16;8H [33mIdentityFile[0m ~/.ssh/github[16;35H[K[17;1H       [28;69H6[16;8H[34h[?25h[?25l[28;58Hk [16;8H[28;58H14[15;1H[32mHost[0m [31mgithub.com[0m[15;16H[K[16;1H       [28;69H5,1  [15;1H[34h[?25h[?25l[28;58Hk [15;1H[28;58H13[14;1H[14;1H[K[28;69H4,0-1[14;1H[34h[?25h[?25l[28;58Hj [14;1H[28;58H14[15;1H[14;1H[7m [0m[28;69H5,1  [15;1H[34h[?25h[?25l[28;58Hj [15;1H[28;58H15[16;8H[15;1H[7m[32mHost[0m[7m [0m[7m[31mgithub.com[0m[7m 
+       [0m[28;69H6,1-8[16;8H[34h[?25h[?25l[28;58Hj [16;8H[28;58H16[17;8H[16;8H[7m [0m[7m[33mIdentityFile[0m[7m ~/.ssh/github 
+       [0m[28;69H7[17;8H[34h[?25h[?25l[28;58Hj [17;8H[28;58H17[18;1H[17;8H[7m [0m[7m[33mUser[0m[7m git [0m[28;69H8,0-1[18;1H[34h[?25h[?25l[28;58Hd [18;1H[28;1H17 fewer lines[28;58H[K[2;1H[2;27r[2;1H[17M[1;28r[11;1H[1m[34m~                                                                                    [12;1H~                                                                                    [13;1H~                                                                                    [14;1H~                                                                                    [15;1H~                                                                                    [16;1H~                                                                                    [17;1H~                                                                                    [18;1H~                                                                                    [19;1H~                                                                                    [20;1H~                                                                                    [21;1H~                                                                                    [22;1H~                                                                                    [23;1H~                                                                                    [24;1H~                                                                                    [25;1H~                                                                                    [26;1H~                                                                                    [27;1H~                                                                                    [0m[28;1H[K[28;68H2,1[11CAll17 fewer lines[28;68H[K[28;68H2,1[11CAll[2;1H[34h[?25h[?25l[34h[?25h[?25l[28;58H^[[2;1H[28;58H  [2;1H[28;58H^[[2;1H[28;58H  [2;1H[34h[?25h[?25l[28;58H:[2;1H[28;1H[K[28;1H:[34h[?25hx[?25l".ssh/config" 9L, 130B written
+[?1l>[34h[?25h[?1049lkshoestring@fractal:~\[?2004h[1;33mshoestring[1;32m@fractal [1;32m~ $[m ls
+[?2004larchxml-bootissue  [0m[01;34mcheatnotes[0m      [01;32mcos-node-setup-file20250116[0m  [01;34mscripts[0m
+[01;34mbin[0m                [01;34mcos-node-setup[0m  null                         ustack
+kshoestring@fractal:~\[?2004h[1;33mshoestring[1;32m@fractal [1;32m~ $[m cd scripts/
+[?2004lkshoestring@fractal:~/scripts\[?2004h[1;33mshoestring[1;32m@fractal [1;32mscripts $[m ls
+[?2004l[0m[01;32mcast[0m  [01;34mgithelpers[0m  [01;32mmntchroot[0m  README.md  typescript
+kshoestring@fractal:~/scripts\[?2004h[1;33mshoestring[1;32m@fractal [1;32mscripts $[m lscd scripts/ls[Kvim .ssh/config ls[Kcd scripts/ls[K[Kls[Kf[Kvim cast
+[?2004l[?1049h[?1h=[1;28r[23m[24m[0m[H[J[?25l[28;1H"cast" 220L, 7562B[2;1H▽[6n[2;1H  [3;1HPzz\[0%m[6n[3;1H           [1;1H[1;1H[34m#!/bin/bash[0m[2;1H[K[3;1H[34m# Error handling function[0m[3;26H[K[4;1H[36mhandle_error() {[0m
+  [33mecho[0m[31m [0m[33m"[0m[31mExecution error on line [0m[35m$1[0m[31m. Exiting...[0m[33m"
+[0m  [33mexit[0m [31m1[0m
+[36m}[0m
+
+[34m# Trap errors and call the error handler[0m
+[33mtrap[0m [33m'[0m[31mhandle_error $LINENO[0m[33m'[0m ERR
+
+[33m[[0m [33m"[0m[35m$([0m[35mid -u[0m[35m)[0m[33m"[0m [33m-ne[0m [33m"[0m[31m0[0m[33m"[0m [33m][0m && [33mecho[0m[31m [0m[33m"[0m[31myou are not root: use 'sudo -s'[0m[33m"[0m[31m [0m&& [33mexit[0m[16;1H[36mnetcycle()
+{[0m
+[33mecho[0m[31m [0m[33m"[0m[31mpress r to restart network or enter to exit[0m[33m"
+read[0m nmrestart
+[33mif [[0m [33m"[0m[35m$nmrestart[0m[33m"[0m [33m==[0m [33m"[0m[31mr[0m[33m"[0m [33m];[0m [33mthen[0m[21;9Hip route flush[22;8Hnmcli con down [35m$conname1[0m [33m&&[0m nmcli con up [35m$conname1[0m[23;8Hnmcli con down [35m$conname2[0m [33m&&[0m nmcli con up [35m$conname2[0m
+[33mfi[0m
+[36m}[0m[28;68H1,1[11CTop[1;1H[34h[?25h[?25l[28;58HG[1;1H[28;58H [27;1H[23m[24m[0m[H[J[1;1H[31m    [0m[35m$iface1[0m[31m)
+      # Add routing rule and routes for [0m[35m$iface1[0m
+[31m      ip route add default via [0m[35m$mgateip[0m[31m dev [0m[35m$iface1[0m
+[31m      ip rule add priority 100 from [0m[35m$base_mgmtip[0m[31m lookup [0m[35m$([0m[33mecho[0m[31m [0m[35m$conname1)[0m[31m_table
+      ip route add [0m[35m$mgateip[0m[31m dev [0m[35m$iface1[0m
+[31m      ip route add default via [0m[35m$mgateip[0m[31m dev [0m[35m$iface1[0m[31m table [0m[35m$([0m[33mecho[0m[31m [0m[35m$conname1)[0m[31m_table
+      ;;
+    # For [0m[35m$iface2[0m[31m interface
+    [0m[35m$iface2[0m[31m)
+      # Add routing rule and routes for [0m[35m$iface2[0m
+[31m      ip rule add priority 110 from [0m[35m$base_servip[0m[31m lookup [0m[35m$([0m[33mecho[0m[31m [0m[35m$conname2)[0m[31m_table
+      ip route add [0m[35m$sgateip[0m[31m dev [0m[35m$iface2[0m
+[31m      ip route add default via [0m[35m$sgateip[0m[31m dev [0m[35m$iface2[0m[31m table [0m[35m$([0m[33mecho[0m[31m [0m[35m$conname2)[0m[31m_table
+      ;;
+  esac
+fi[0m[33m"[0m[31m [0m[33m>[0m /etc/NetworkManager/dispatcher.d/99-add-routes
+[33mchmod[0m [35m+x[0m /etc/NetworkManager/dispatcher.d/99-add-routes
+[33mecho[0m[31m [0m[33m"[0m[31mroutes for [0m[35m$iface1[0m[31m and [0m[35m$iface2[0m[31m have been added to the NetworkManager config[0m[33m"[0m
+[36m}[0m
+
+[33mif [[0m [33m-f[0m /etc/NetworkManager/dispatcher.d/99-add-route [33m];[0m [33mthen[0m[22;9Hmodrouteips
+[33melse[0m[24;9Hnewroutefile
+[33mfi[0m
+
+netcycle[28;68H220,1[9CBot[27;1H[34h[?25h[?25l[28;58H^U[27;1H[28;58H  [22;5H[1;27r[1;1H[13L[1;28r[1;1H[33mfi[0m
+
+[34m### create route automation script for NetworkManager[0m
+[36mbase_mgmtip[0m=[35m$([0m[33mecho[0m[31m [0m[35m$mgmtip[0m[31m [0m[33m|[0m[35m [0m[33msed[0m[35m [0m[33m'[0m[31ms/\/24//[0m[33m'[0m[35m)[0m
+[36mbase_servip[0m=[35m$([0m[33mecho[0m[31m [0m[35m$servip[0m[31m [0m[33m|[0m[35m [0m[33msed[0m[35m [0m[33m'[0m[31ms/\/24//[0m[33m'[0m[35m)[0m
+
+[33mecho[0m[31m [0m[33m"[0m[31m#!/bin/bash
+
+# place in /etc/NetworkManager/dispatcher.d/
+# Check if the interface is up and apply routing rules accordingly
+if [ [0m[35m\"\$[0m[31m2[0m[35m\"[0m[31m == [0m[35m\"[0m[31mup[0m[35m\"[0m[31m ]; then
+  case [0m[35m\"\$[0m[31m1[0m[35m\"[0m[31m in
+    # For [0m[35m$iface1[0m[31m interface[0m[28;68H[K[28;68H202,5[9C93%[22;5H[34h[?25h[?25l[28;58H^D[22;5H[28;58H  [22;9H[1;27r[1;1H[13M[1;28r[15;1H[31m  esac
+fi[0m[33m"[0m[31m [0m[33m>[0m /etc/NetworkManager/dispatcher.d/99-add-routes
+[33mchmod[0m [35m+x[0m /etc/NetworkManager/dispatcher.d/99-add-routes
+[33mecho[0m[31m [0m[33m"[0m[31mroutes for [0m[35m$iface1[0m[31m and [0m[35m$iface2[0m[31m have been added to the NetworkManager config[0m[33m"[0m
+[36m}[0m
+
+[33mif [[0m [33m-f[0m /etc/NetworkManager/dispatcher.d/99-add-route [33m];[0m [33mthen[0m[22;9Hmodrouteips
+[33melse[0m[24;9Hnewroutefile
+[33mfi[0m
+
+netcycle[28;68H[K[28;68H215,2-9[7CBot[22;9H[34h[?25h[?25l[28;58Hj[22;9H[28;58H [23;4H[28;70H6,4  [23;4H[34h[?25h[?25l[28;58Hj[23;4H[28;58H [24;9H[28;70H7,2-9[24;9H[34h[?25h[?25l[28;58Hk[24;9H[28;58H [23;4H[28;70H6,4  [23;4H[34h[?25h[?25l[28;58Hk[23;4H[28;58H [22;9H[28;70H5,2-9[22;9H[34h[?25h[?25l[28;58Hj[22;9H[28;58H [23;4H[28;70H6,4  [23;4H[34h[?25h[?25l[28;58Hj[23;4H[28;58H [24;9H[28;70H7,2-9[24;9H[34h[?25h[?25l[28;58Hj[24;9H[28;58H [25;2H[28;70H8,2  [25;2H[34h[?25h[?25l[28;58Hj[25;2H[28;58H [26;1H[28;70H9,0-1[26;1H[34h[?25h[?25l[28;58Hj[26;1H[28;58H [27;8H[28;69H20,8  [27;8H[34h[?25h[?25l[28;58Hj[27;8H[28;58H [27;8H[34h[?25h[?25l[28;58H/[27;8H[28;58H[K[28;1H/[34h[?25hn[?25l[23m[24m[0m[H[J[1;1H[34m#!/bi[0m[7m[34mn[0m[34m/bash
+
+# Error ha[0m[30m[43mn[0m[34mdli[0m[30m[43mn[0m[34mg fu[0m[30m[43mn[0m[34mctio[0m[30m[43mn[0m
+[36mha[0m[30m[43mn[0m[36mdle_error() {[0m
+  [33mecho[0m[31m [0m[33m"[0m[31mExecutio[0m[30m[43mn[0m[31m error o[0m[30m[43mn[0m[31m li[0m[30m[43mn[0m[31me [0m[35m$1[0m[31m. Exiti[0m[30m[43mn[0m[31mg...[0m[33m"
+[0m  [33mexit[0m [31m1[0m
+[36m}[0m
+
+[34m# Trap errors a[0m[30m[43mn[0m[34md call the error ha[0m[30m[43mn[0m[34mdler[0m
+[33mtrap[0m [33m'[0m[31mha[0m[30m[43mn[0m[31mdle_error $LINENO[0m[33m'[0m ERR
+
+[33m[[0m [33m"[0m[35m$([0m[35mid -u[0m[35m)[0m[33m"[0m [33m-[0m[30m[43mn[0m[33me[0m [33m"[0m[31m0[0m[33m"[0m [33m][0m && [33mecho[0m[31m [0m[33m"[0m[31myou are [0m[30m[43mn[0m[31mot root: use 'sudo -s'[0m[33m"[0m[31m [0m&& [33mexit[0m[16;1H[30m[43mn[0m[36metcycle()
+{[0m
+[33mecho[0m[31m [0m[33m"[0m[31mpress r to restart [0m[30m[43mn[0m[31metwork or e[0m[30m[43mn[0m[31mter to exit[0m[33m"
+read[0m [30m[43mn[0mmrestart
+[33mif [[0m [33m"[0m[35m$[0m[30m[43mn[0m[35mmrestart[0m[33m"[0m [33m==[0m [33m"[0m[31mr[0m[33m"[0m [33m];[0m [33mthe[0m[30m[43mn[0m[21;9Hip route flush[22;8H[30m[43mn[0mmcli co[30m[43mn[0m dow[30m[43mn[0m [35m$co[0m[30m[43mnn[0m[35mame1[0m [33m&&[0m [30m[43mn[0mmcli co[30m[43mn[0m up [35m$co[0m[30m[43mnn[0m[35mame1[0m[23;8H[30m[43mn[0mmcli co[30m[43mn[0m dow[30m[43mn[0m [35m$co[0m[30m[43mnn[0m[35mame2[0m [33m&&[0m [30m[43mn[0mmcli co[30m[43mn[0m up [35m$co[0m[30m[43mnn[0m[35mame2[0m
+[33mfi[0m
+[36m}[0m[28;68H1,6[11CTop/n[28;68H[K[28;3H[34h[?25he[?25l[1;6H[34mn[3;11Hndling function[0m[4;3H[36mn[0m[5;17H[31mn[8Cn[0m[3C[7m[31mne[0m[10C[31mn[0m[9;16H[34mn[19Cn[0m[10;9H[31mn[0m[12;16H[30m[43me[0m[24C[31mn[0m[16;2H[30m[43me[0m[18;27H[30m[43me[0m[10C[31mn[0m[19;6Hn[20;8H[35mn[0m[23C[33mn[0m[22;8Hn[7Cn down[4C[35mnn[0m[8Cn[7Cn[7C[35mnn[0m[23;8Hn[7Cn down[4C[35mnn[0m[8Cn[7Cn[7C[35mnn[0m[28;68H5,30[10CTop[28;68H[K[28;4H[34h[?25ht[?25l[1;27r[1;1H[2M[1;28r[3;30H[31mne[0m[10;15H[33mne[0m[14;1H[7m[36mnet[0m[16;28H[30m[43mt[0m[26;1H[34m### set iface variables[0m[28;1H[K[28;68H16,1[11C1%/net[28;68H[K[28;5H[34h[?25hc[?25l[14;4H[7m[36mc[0m[16;26H[31mnet[0m[28;68H16,1[11C1%[28;68H[K[28;6H[34h[?25hy[?25l[14;5H[7m[36my[0m[28;68H16,1[11C1%[28;68H[K[28;7H[34h[?25hd[?25l[23m[24m[0m[H[J[1;1H[31m    [0m[35m$iface1[0m[31m)
+      # Add routing rule and routes for [0m[35m$iface1[0m
+[31m      ip route add default via [0m[35m$mgateip[0m[31m dev [0m[35m$iface1[0m
+[31m      ip rule add priority 100 from [0m[35m$base_mgmtip[0m[31m lookup [0m[35m$([0m[33mecho[0m[31m [0m[35m$conname1)[0m[31m_table
+      ip route add [0m[35m$mgateip[0m[31m dev [0m[35m$iface1[0m
+[31m      ip route add default via [0m[35m$mgateip[0m[31m dev [0m[35m$iface1[0m[31m table [0m[35m$([0m[33mecho[0m[31m [0m[35m$conname1)[0m[31m_table
+      ;;
+    # For [0m[35m$iface2[0m[31m interface
+    [0m[35m$iface2[0m[31m)
+      # Add routing rule and routes for [0m[35m$iface2[0m
+[31m      ip rule add priority 110 from [0m[35m$base_servip[0m[31m lookup [0m[35m$([0m[33mecho[0m[31m [0m[35m$conname2)[0m[31m_table
+      ip route add [0m[35m$sgateip[0m[31m dev [0m[35m$iface2[0m
+[31m      ip route add default via [0m[35m$sgateip[0m[31m dev [0m[35m$iface2[0m[31m table [0m[35m$([0m[33mecho[0m[31m [0m[35m$conname2)[0m[31m_table
+      ;;
+  esac
+fi[0m[33m"[0m[31m [0m[33m>[0m /etc/NetworkManager/dispatcher.d/99-add-routes
+[33mchmod[0m [35m+x[0m /etc/NetworkManager/dispatcher.d/99-add-routes
+[33mecho[0m[31m [0m[33m"[0m[31mroutes for [0m[35m$iface1[0m[31m and [0m[35m$iface2[0m[31m have been added to the NetworkManager config[0m[33m"[0m
+[36m}[0m
+
+[33mif [[0m [33m-f[0m /etc/NetworkManager/dispatcher.d/99-add-route [33m];[0m [33mthen[0m[22;9Hmodrouteips
+[33melse[0m[24;9Hnewroutefile
+[33mfi[0m
+
+netcycle[28;68H220,8[9CBot/netcyd[28;68H[K[28;8H[34h[?25hy[?25l[59C220,8[9CBot[28;68H[K[28;9H[34h[?25h[?25l[28;8H[K[28;68H220,8[9CBot[28;68H[K[28;8H[34h[?25h[?25l[28;7H[K[23m[24m[0m[H[J[1;1H[34m# Error handling function[0m
+[36mhandle_error() {[0m
+  [33mecho[0m[31m [0m[33m"[0m[31mExecution error on line [0m[35m$1[0m[31m. Exiting...[0m[33m"
+[0m  [33mexit[0m [31m1[0m
+[36m}[0m
+
+[34m# Trap errors and call the error handler[0m
+[33mtrap[0m [33m'[0m[31mhandle_error $LINENO[0m[33m'[0m ERR
+
+[33m[[0m [33m"[0m[35m$([0m[35mid -u[0m[35m)[0m[33m"[0m [33m-ne[0m [33m"[0m[31m0[0m[33m"[0m [33m][0m && [33mecho[0m[31m [0m[33m"[0m[31myou are not root: use 'sudo -s'[0m[33m"[0m[31m [0m&& [33mexit[0m[14;1H[7m[36mnetcy[0m[36mcle()
+{[0m
+[33mecho[0m[31m [0m[33m"[0m[31mpress r to restart network or enter to exit[0m[33m"
+read[0m nmrestart
+[33mif [[0m [33m"[0m[35m$nmrestart[0m[33m"[0m [33m==[0m [33m"[0m[31mr[0m[33m"[0m [33m];[0m [33mthen[0m[19;9Hip route flush[20;8Hnmcli con down [35m$conname1[0m [33m&&[0m nmcli con up [35m$conname1[0m[21;8Hnmcli con down [35m$conname2[0m [33m&&[0m nmcli con up [35m$conname2[0m
+[33mfi[0m
+[36m}[0m
+
+
+[34m### set iface variables[0m[28;68H16,1[11C1%/netcy[28;68H[K[28;7H[34h[?25h[?25l[28;6H[K[14;5H[36my[0m[28;68H16,1[11C1%[28;68H[K[28;6H[34h[?25hy[?25l[14;5H[7m[36my[0m[28;68H16,1[11C1%[28;68H[K[28;7H[34h[?25hc[?25l[14;6H[7m[36mc[0m[28;68H16,1[11C1%[28;68H[K[28;8H[34h[?25hl[?25l[14;7H[7m[36ml[0m[28;68H16,1[11C1%[28;68H[K[28;9H[34h[?25he[?25l[14;8H[7m[36me[0m[28;68H16,1[11C1%[28;68H[K[28;10H[34h[?25h[?25l[31msearch hit BOTTOM, continuing at TOP[14;1H[0m[30m[43mnetcycle[0m[28;68H16,1[11C1%[28;68H[K[28;68H16,1[11C1%[14;1H[34h[?25h[?25l[28;58Hj[14;1H[28;58H [15;1H[36m[46m{[23;1H}[0m[28;69H7[15;1H[34h[?25h[?25l[28;58Hj[15;1H[28;58H [16;1H[15;1H[36m{[23;1H}[0m[28;69H8[16;1H[34h[?25h[?25l[28;58Hj[16;1H[28;58H [17;1H[28;69H9[17;1H[34h[?25h[?25l[28;58Hj[17;1H[28;58H [18;1H[28;68H20[18;1H[34h[?25h[?25l[28;58Hj[18;1H[28;58H [19;8H[28;69H1,1-8[19;8H[34h[?25h[?25l[28;58Hj[19;8H[28;58H [20;1H[28;69H2,1  [20;1H[34h[?25h[?25l[28;58Hj[20;1H[28;58H [21;1H[28;69H3[21;1H[34h[?25h[?25l[28;58Hk[21;1H[28;58H [20;1H[28;69H2[20;1H[34h[?25h[?25l[28;58Hk[20;1H[28;58H [19;8H[28;69H1,1-8[19;8H[34h[?25h[?25l[28;58Hk[19;8H[28;58H [18;1H[28;69H0,1  [18;1H[34h[?25h[?25l[28;58Hj[18;1H[28;58H [19;8H[28;69H1,1-8[19;8H[34h[?25h[?25l[28;58Hd[19;8H[34h[?25h[?25l[28;59Hl[19;8H[28;58H  [19;1Hip route flush[19;15H[K[28;72H  [19;1H[34h[?25h[?25l[28;58Hu[19;1H[28;1H1 change; before #1  0 seconds ago[28;35H[K[19;8H        ip route flush[28;68H21,1-8[9C1%[28;68H[K[28;68H21,1-8[9C1%[19;8H[34h[?25h[?25l[28;58Hh[19;8H[28;58H [19;8H[34h[?25h[?25l[28;58Hi[19;8H[28;58H [19;1H[28;1H[1m-- INSERT --[0m[28;13H[K[28;68H21,1[11C1%[19;1H[34h[?25h[?25ld[28;71H2[19;2H[34h[?25h[?25ll[28;71H3[19;3H[34h[?25h[?25l [28;71H2[19;2H[34h[?25h[?25l [28;71H1[19;1H[34h[?25h[?25l[18;27r[27;1H
+[1;28r[18;1H[33mif [[0m [33m"[0m[35m$nmrestart[0m[33m"[0m [33m==[0m [33m"[0m[31mr[0m[33m"[0m [33m];[0m [33mthen[0m[8Cip route flush[27;1H[36mifnum[0m=[31m1[0m[28;68H[K[28;68H20,33[10C1%[18;33H[34h[?25h[28;1H[K[18;32H[?25l[28;58H^[[18;32H[28;58H  [18;33H[28;68H20,32[10C1%[18;32H[34h[?25h[?25l[28;58Hu[18;32H[28;1H1 more line; before #2  2 seconds ago[28;58H[K[19;8H[19;27r[19;1H[L[1;28r[18;41H[K[19;9Hip route flush[28;1H[K[28;68H21,1-8[9C1%1 more line; before #2  2 seconds ago[28;68H[K[28;68H21,1-8[9C1%[19;8H[34h[?25h[?25l[28;58Hd[19;8H[34h[?25h[?25l[28;59Hl[19;8H[28;58H  [19;1Hip route flush[19;15H[K[28;72H  [19;1H[34h[?25h[?25l[28;58Hi[19;1H[28;58H [19;1H[28;1H[1m-- INSERT --[0m[28;14H[K[28;68H21,1[11C1%[19;1H[34h[?25h[?25l        ip route flush[28;71H2-9[19;9H[34h[?25h[?25lhip route flush[28;71H3-10[19;10H[34h[?25h[?25lip route flush[19;23H[K[28;71H2-9 [19;9H[34h[?25h[28;1H[K[?25l[28;68H21,1-8[9C1%[19;8H[34h[?25h[?25l[28;58H^[[19;8H[28;58H  [19;8H[28;58H^[[19;8H[28;58H  [19;8H[34h[?25h[?25l[28;58Hj[19;8H[28;58H [20;8H[28;69H2,8  [20;8H[34h[?25h[?25l[28;58H0[20;8H[28;58H [20;1H[28;71H1[20;1H[34h[?25h[?25l[28;58Hi[20;1H[28;58H [20;1H[28;1H[1m-- INSERT --[0m[28;68H[K[28;68H22,1[11C1%[20;1H[34h[?25h[?25ld       nmcli con down [35m$conname1[0m [1C[33m&[0m nmcli con up [35m$conname1[0m[28;71H2[20;2H[34h[?25h[?25ll       nmcli con down [35m$conname1[0m [1C[33m&[0m nmcli con up [35m$conname1[0m[28;71H3[20;3H[34h[?25h[?25l       nmcli con down [35m$conname1[0m [33m&[0m[1C nmcli con up [35m$conname1[0m [28;71H2[20;2H[34h[?25h[?25l       nmcli con down [35m$conname1[0m [33m&[0m[1C nmcli con up [35m$conname1[0m [28;71H1[20;1H[34h[?25h[?25ld       nmcli con down [35m$conname1[0m [1C[33m&[0m nmcli con up [35m$conname1[0m[28;71H2[20;2H[34h[?25h[?25l       nmcli con down [35m$conname1[0m [33m&[0m[1C nmcli con up [35m$conname1[0m [28;71H1[20;1H[34h[?25h[28;1H[K[20;1H[?25l[28;58H^[[20;1H[28;58H  [20;1H[28;68H22,1[11C1%[20;1H[34h[?25h[?25l[28;58Hd[20;1H[34h[?25h[?25l[28;59Hl[20;1H[28;58H  [20;1H      nmcli con down [35m$conname1[0m [33m&[0m[1C nmcli con up [35m$conname1[0m [34h[?25h[?25l[28;58Hd[20;1H[34h[?25h[?25l[28;59Hl[20;1H[28;58H  [20;1H     nmcli con down [35m$conname1[0m [33m&[0m[1C nmcli con up [35m$conname1[0m [34h[?25h[?25l[28;58Hd[20;1H[34h[?25h[?25l[28;59Hl[20;1H[28;58H  [20;1H    nmcli con down [35m$conname1[0m [33m&[0m[1C nmcli con up [35m$conname1[0m [34h[?25h[?25l[28;58Hd[20;1H[34h[?25h[?25l[28;59Hl[20;1H[28;58H  [20;1H   nmcli con down [35m$conname1[0m [33m&[0m[1C nmcli con up [35m$conname1[0m [34h[?25h[?25l[28;58Hd[20;1H[34h[?25h[?25l[28;59Hl[20;1H[28;58H  [20;1H  nmcli con down [35m$conname1[0m [33m&[0m[1C nmcli con up [35m$conname1[0m [34h[?25h[?25l[28;58Hd[20;1H[34h[?25h[?25l[28;59Hl[20;1H[28;58H  [20;1H nmcli con down [35m$conname1[0m [33m&[0m[1C nmcli con up [35m$conname1[0m [34h[?25h[?25l[28;58Hd[20;1H[34h[?25h[?25l[28;59Hl[20;1H[28;58H  [20;1Hnmcli con down [35m$conname1[0m [33m&[0m[1C nmcli con up [35m$conname1[0m [34h[?25h[?25l[28;58Hi[20;1H[28;58H [20;1H[28;1H[1m-- INSERT --[0m[28;68H[K[28;68H22,1[11C1%[20;1H[34h[?25h[?25l        nmcli con down [35m$conname1[0m [33m&&[0m nmcli con up [35m$conname1[0m[28;71H2-9[20;9H[34h[?25h[28;1H[K[?25l[28;68H22,1-8[9C1%[20;8H[34h[?25h[?25l[28;58Hj[20;8H[28;58H [21;8H[28;69H3,8  [21;8H[34h[?25h[?25l[28;58Hh[21;8H[28;58H [21;7H[28;71H7[21;7H[34h[?25h[?25l[28;58Hv[21;7H[28;58H1[21;7H[28;1H[1m-- VISUAL --[0m[28;58H[K[28;58H1[21;7H[28;68H23,7[11C1%[21;7H[34h[?25h[?25l[28;58Hh[21;7H[28;58H2[21;6H [7m [0m[28;71H6[21;6H[34h[?25h[?25l[28;58Hh[21;6H[28;58H3[21;5H [7m [0m[28;71H5[21;5H[34h[?25h[?25l[28;58Hh[21;5H[28;58H4[21;4H [7m [0m[28;71H4[21;4H[34h[?25h[?25l[28;58Hh[21;4H[28;58H5[21;3H [7m [0m[28;71H3[21;3H[34h[?25h[?25l[28;58Hh[21;3H[28;58H6[21;2H [7m [0m[28;71H2[21;2H[34h[?25h[?25l[28;58Hh[21;2H[28;58H7[21;1H [7m [0m[28;71H1[21;1H[34h[?25h[?25l[28;58Hd[21;1H[28;58H [21;1Hnmcli con down [35m$conname2[0m [33m&&[0m nmcli con up [35m$conname2[0m      [21;57H[K[28;1H[K[28;68H23,1[11C1%[21;1H[34h[?25h[?25l[28;58Hi[21;1H[28;58H [21;1H[28;1H[1m-- INSERT --[0m[28;68H[K[28;68H23,1[11C1%[21;1H[34h[?25h[?25l        nmcli con down [35m$conname2[0m [33m&&[0m nmcli con up [35m$conname2[0m[28;71H2-9[21;9H[34h[?25h[28;1H[K[?25l[28;68H23,1-8[9C1%[21;8H[34h[?25h[?25l[28;58H^[[21;8H[28;58H  [21;8H[28;58H^[[21;8H[28;58H  [21;8H[34h[?25h[?25l[28;58Hk[21;8H[28;58H [20;8H[28;69H2[20;8H[34h[?25h[?25l[28;58Hk[20;8H[28;58H [19;8H[28;69H1[19;8H[34h[?25h[?25l[28;58Hl[19;8H[28;58H [19;9H[28;71H2-9[19;9H[34h[?25h[23m[24m[0m[H[J[?25l[1;3H[33mexit[0m [31m1[0m
+[36m}[0m
+
+[34m# Trap errors and call the error handler[0m
+[33mtrap[0m [33m'[0m[31mhandle_error $LINENO[0m[33m'[0m ERR
+
+[33m[[0m [33m"[0m[35m$([0m[35mid -u[0m[35m)[0m[33m"[0m [33m-ne[0m [33m"[0m[31m0[0m[33m"[0m [33m][0m && [33mecho[0m[31m [0m[33m"[0m[31myou are not root: use 'sudo -s'[0m[33m"[0m[31m [0m&& [33mexit[0m[11;1H[30m[43mnetcycle[0m[36m()
+{[0m
+[33mecho[0m[31m [0m[33m"[0m[31mpress r to restart network or enter to exit[0m[33m"
+read[0m nmrestart
+[33mif [[0m [33m"[0m[35m$nmrestart[0m[33m"[0m [33m==[0m [33m"[0m[31mr[0m[33m"[0m [33m];[0m [33mthen[0m[16;9Hip route flush[17;9Hnmcli con down [35m$conname1[0m [33m&&[0m nmcli con up [35m$conname1[0m[18;9Hnmcli con down [35m$conname2[0m [33m&&[0m nmcli con up [35m$conname2[0m
+[33mfi[0m
+[36m}[0m[23;68H21,2-9[9C2%[16;9H[34h[?25h[23m[24m[0m[H[J[?25l[1;3H[33mecho[0m[31m [0m[33m"[0m[31mExecution error on line [0m[35m$1[0m[31m. Exiting...[0m[33m"
+[0m  [33mexit[0m [31m1[0m
+[36m}[0m
+
+[34m# Trap errors and call the error handler[0m
+[33mtrap[0m [33m'[0m[31mhandle_error $LINENO[0m[33m'[0m ERR
+
+[33m[[0m [33m"[0m[35m$([0m[35mid -u[0m[35m)[0m[33m"[0m [33m-ne[0m [33m"[0m[31m0[0m[33m"[0m [33m][0m && [33mecho[0m[31m [0m[33m"[0m[31myou are not root: use 'sudo -s'[0m[33m"[0m[31m [0m&& [33mexit[0m[12;1H[30m[43mnetcycle[0m[36m()
+{[0m
+[33mecho[0m[31m [0m[33m"[0m[31mpress r to restart network or enter to exit[0m[33m"
+read[0m nmrestart
+[33mif [[0m [33m"[0m[35m$nmrestart[0m[33m"[0m [33m==[0m [33m"[0m[31mr[0m[33m"[0m [33m];[0m [33mthen[0m[17;9Hip route flush[18;9Hnmcli con down [35m$conname1[0m [33m&&[0m nmcli con up [35m$conname1[0m[19;9Hnmcli con down [35m$conname2[0m [33m&&[0m nmcli con up [35m$conname2[0m
+[33mfi[0m
+[36m}[0m
+
+
+[34m### set iface variables[0m[25;68H21,2-9[9C2%[17;9H[34h[?25h[23m[24m[0m[H[J[?25l[1;1H[36mhandle_error() {[0m
+  [33mecho[0m[31m [0m[33m"[0m[31mExecution error on line [0m[35m$1[0m[31m. Exiting...[0m[33m"
+[0m  [33mexit[0m [31m1[0m
+[36m}[0m
+
+[34m# Trap errors and call the error handler[0m
+[33mtrap[0m [33m'[0m[31mhandle_error $LINENO[0m[33m'[0m ERR
+
+[33m[[0m [33m"[0m[35m$([0m[35mid -u[0m[35m)[0m[33m"[0m [33m-ne[0m [33m"[0m[31m0[0m[33m"[0m [33m][0m && [33mecho[0m[31m [0m[33m"[0m[31myou are not root: use 'sudo -s'[0m[33m"[0m[31m [0m&& [33mexit[0m[13;1H[30m[43mnetcycle[0m[36m()
+{[0m
+[33mecho[0m[31m [0m[33m"[0m[31mpress r to restart network or enter to exit[0m[33m"
+read[0m nmrestart
+[33mif [[0m [33m"[0m[35m$nmrestart[0m[33m"[0m [33m==[0m [33m"[0m[31mr[0m[33m"[0m [33m];[0m [33mthen[0m[18;9Hip route flush[19;9Hnmcli con down [35m$conname1[0m [33m&&[0m nmcli con up [35m$conname1[0m[20;9Hnmcli con down [35m$conname2[0m [33m&&[0m nmcli con up [35m$conname2[0m
+[33mfi[0m
+[36m}[0m
+
+
+[34m### set iface variables[0m[27;68H21,2-9[9C1%[18;9H[34h[?25h[23m[24m[0m[H[J[?25l[1;1H[36mhandle_error() {[0m
+  [33mecho[0m[31m [0m[33m"[0m[31mExecution error on line [0m[35m$1[0m[31m. Exiting...[0m[33m"
+[0m  [33mexit[0m [31m1[0m
+[36m}[0m
+
+[34m# Trap errors and call the error handler[0m
+[33mtrap[0m [33m'[0m[31mhandle_error $LINENO[0m[33m'[0m ERR
+
+[33m[[0m [33m"[0m[35m$([0m[35mid -u[0m[35m)[0m[33m"[0m [33m-ne[0m [33m"[0m[31m0[0m[33m"[0m [33m][0m && [33mecho[0m[31m [0m[33m"[0m[31myou are not root: use 'sudo -s'[0m[33m"[0m[31m [0m&& [33mexit[0m[13;1H[30m[43mnetcycle[0m[36m()
+{[0m
+[33mecho[0m[31m [0m[33m"[0m[31mpress r to restart network or enter to exit[0m[33m"
+read[0m nmrestart
+[33mif [[0m [33m"[0m[35m$nmrestart[0m[33m"[0m [33m==[0m [33m"[0m[31mr[0m[33m"[0m [33m];[0m [33mthen[0m[18;9Hip route flush[19;9Hnmcli con down [35m$conname1[0m [33m&&[0m nmcli con up [35m$conname1[0m[20;9Hnmcli con down [35m$conname2[0m [33m&&[0m nmcli con up [35m$conname2[0m
+[33mfi[0m
+[36m}[0m
+
+
+[34m### set iface variables[0m[26;68H21,2-9[9C1%[18;9H[34h[?25h[23m[24m[0m[H[J[?25l[1;1H[34m# Error handling function[0m
+[36mhandle_error() {[0m
+  [33mecho[0m[31m [0m[33m"[0m[31mExecution error on line [0m[35m$1[0m[31m. Exiting...[0m[33m"
+[0m  [33mexit[0m [31m1[0m
+[36m}[0m
+
+[34m# Trap errors and call the error handler[0m
+[33mtrap[0m [33m'[0m[31mhandle_error $LINENO[0m[33m'[0m ERR
+
+[33m[[0m [33m"[0m[35m$([0m[35mid -u[0m[35m)[0m[33m"[0m [33m-ne[0m [33m"[0m[31m0[0m[33m"[0m [33m][0m && [33mecho[0m[31m [0m[33m"[0m[31myou are not root: use 'sudo -s'[0m[33m"[0m[31m [0m&& [33mexit[0m[14;1H[30m[43mnetcycle[0m[36m()
+{[0m
+[33mecho[0m[31m [0m[33m"[0m[31mpress r to restart network or enter to exit[0m[33m"
+read[0m nmrestart
+[33mif [[0m [33m"[0m[35m$nmrestart[0m[33m"[0m [33m==[0m [33m"[0m[31mr[0m[33m"[0m [33m];[0m [33mthen[0m[19;9Hip route flush[20;9Hnmcli con down [35m$conname1[0m [33m&&[0m nmcli con up [35m$conname1[0m[21;9Hnmcli con down [35m$conname2[0m [33m&&[0m nmcli con up [35m$conname2[0m
+[33mfi[0m
+[36m}[0m
+
+
+[34m### set iface variables[0m[28;68H21,2-9[9C1%[19;9H[34h[?25h[?25l[28;58Hj[19;9H[28;58H [20;9H[28;69H2[20;9H[34h[?25h[?25l[28;58Hk[20;9H[28;58H [19;9H[28;69H1[19;9H[34h[?25h[?25l[28;58Hl[19;9H[28;58H [19;10H[28;71H3-10[19;10H[34h[?25h[?25l[28;58Hl[19;10H[28;58H [19;11H[28;71H4-11[19;11H[34h[?25h[?25l[28;58Hl[19;11H[28;58H [19;12H[28;71H5-12[19;12H[34h[?25h[?25l[28;58Hl[19;12H[28;58H [19;13H[28;71H6-13[19;13H[34h[?25h[?25l[28;58Hv[19;13H[28;58H1[19;13H[28;1H[1m-- VISUAL --[0m[28;58H[K[28;58H1[19;13H[28;68H21,6-13[8C1%[19;13H[34h[?25h[?25l[28;58Hl[19;13H[28;58H2[19;14H[7mo[0m[28;71H7-14[19;14H[34h[?25h[?25l[28;58Hl[19;14H[28;58H3[19;15H[7mu[0m[28;71H8-15[19;15H[34h[?25h[?25l[28;58Hl[19;15H[28;58H4[19;16H[7mt[0m[28;71H9-16[19;16H[34h[?25h[?25l[28;58Hs[19;16H[28;58H [19;13H[28;4H[1mINSERT[0m[28;68H[K[28;68H21,6-13[8C1%[19;13H flush[19;19H[K[19;13H[34h[?25h[?25lu flush[28;71H7-14[19;14H[34h[?25h[?25ll flush[28;71H8-15[19;15H[34h[?25h[?25le flush[28;71H9-16[19;16H[34h[?25h[28;1H[K[?25l[28;68H21,8-15[8C1%[19;15H[34h[?25h[?25l[28;58H^[[19;15H[28;58H  [19;15H[28;58H^[[19;15H[28;58H  [19;15H[34h[?25h[?25l[28;58H:[19;15H[28;58H[K[28;1H:[34h[?25hw[?25l"cast" 220L, 7549B written[19;15H[28;68H21,8-15[8C1%[28;68H[K[28;68H21,8-15[8C1%[19;15H[34h[?25h[?25l[28;58H:[19;15H[28;1H[K[28;1H:[34h[?25hx[?25l[28;1H[K[28;1H[?1l>[34h[?25h[?1049lkshoestring@fractal:~/scripts\[?2004h[1;33mshoestring[1;32m@fractal [1;32mscripts $[m vim castls[Kcd scripts/ls[Kcd scripts/ls[Kvim cast[Kvim cast
+[?2004l[?1049h[?1h=[1;28r[23m[24m[0m[H[J[?25l[28;1H"cast" 220L, 7549B[2;1H▽[6n[2;1H  [3;1HPzz\[0%m[6n[3;1H           [1;1H[1;1H[34m#!/bin/bash[0m[2;1H[K[3;1H[34m# Error handling function[0m[3;26H[K[4;1H[36mhandle_error() {[0m
+  [33mecho[0m[31m [0m[33m"[0m[31mExecution error on line [0m[35m$1[0m[31m. Exiting...[0m[33m"
+[0m  [33mexit[0m [31m1[0m
+[36m}[0m
+
+[34m# Trap errors and call the error handler[0m
+[33mtrap[0m [33m'[0m[31mhandle_error $LINENO[0m[33m'[0m ERR
+
+[33m[[0m [33m"[0m[35m$([0m[35mid -u[0m[35m)[0m[33m"[0m [33m-ne[0m [33m"[0m[31m0[0m[33m"[0m [33m][0m && [33mecho[0m[31m [0m[33m"[0m[31myou are not root: use 'sudo -s'[0m[33m"[0m[31m [0m&& [33mexit[0m[16;1H[30m[43mnetcycle[0m[36m()
+{[0m
+[33mecho[0m[31m [0m[33m"[0m[31mpress r to restart network or enter to exit[0m[33m"
+read[0m nmrestart
+[33mif [[0m [33m"[0m[35m$nmrestart[0m[33m"[0m [33m==[0m [33m"[0m[31mr[0m[33m"[0m [33m];[0m [33mthen[0m[21;9Hip rule flush[22;9Hnmcli con down [35m$conname1[0m [33m&&[0m nmcli con up [35m$conname1[0m[23;9Hnmcli con down [35m$conname2[0m [33m&&[0m nmcli con up [35m$conname2[0m
+[33mfi[0m
+[36m}[0m[28;68H21,8-15[7CTop[21;15H[34h[?25h[?25l[28;58Ho[21;15H[28;58H [22;9H[28;1H[1m-- INSERT --[0m[28;14H[K[28;68H22,2-9[8CTop[22;27r[22;1H[L[1;28r[28;68H[K[28;68H22,2-9[8CTop[22;9H[34h[?25h[?25lu[28;71H3-10[22;10H[34h[?25h[?25l[22;9H[K[28;71H2-9 [22;9H[34h[?25h[28;1H[K[?25l[28;68H22,1-8[8CTop[22;8H[34h[?25h[?25l[28;58Hu[22;8H[28;1H1 line less; before #1  4 seconds ago[28;58H[K[21;15H[22;27r[27;1H
+[1;28r[28;1H[K[28;68H21,8-15[7CTop1 line less; before #1  4 seconds ago[28;68H[K[28;68H21,8-15[7CTop[21;15H[34h[?25h[?25l[28;58Hu[21;15H[28;1HAlready at oldest change[28;25H[K[21;15H[28;68H21,8-15[7CTop[21;15H[34h[?25h[?25l[28;58Hu[21;15H[28;58H[K[21;15H[28;68H21,8-15[7CTop[21;15H[34h[?25h[?25l[28;58Hh[21;15H[28;58H [21;14H[28;71H7-14[21;14H[34h[?25h[?25l[28;58Hh[21;14H[28;58H [21;13H[28;71H6-13[21;13H[34h[?25h[?25l[28;58Hh[21;13H[28;58H [21;12H[28;71H5-12[21;12H[34h[?25h[?25l[28;58Hh[21;12H[28;58H [21;11H[28;71H4-11[21;11H[34h[?25h[?25l[28;58Hh[21;11H[28;58H [21;10H[28;71H3-10[21;10H[34h[?25h[?25l[28;58Hh[21;10H[28;58H [21;9H[28;71H2-9 [21;9H[34h[?25h[?25l[28;58HO[21;9H[28;58H [21;9H[28;1H[1m-- INSERT --[0m[28;13H[K[28;68H21,2-9[8CTop[21;27r[21;1H[L[1;28r[28;68H[K[28;68H21,2-9[8CTop[21;9H[34h[?25h[?25li[28;71H3-10[21;10H[34h[?25h[?25lp[28;71H4-11[21;11H[34h[?25h[?25l[28;71H5-12[21;12H[34h[?25h[?25lr[28;71H6-13[21;13H[34h[?25h[?25lo[28;71H7-14[21;14H[34h[?25h[?25lu[28;71H8-15[21;15H[34h[?25h[?25lt[28;71H9-16[21;16H[34h[?25h[?25le[28;71H10-17[21;17H[34h[?25h[?25l[28;72H1-18[21;18H[34h[?25h[?25lf[28;72H2-19[21;19H[34h[?25h[?25ll[28;72H3-20[21;20H[34h[?25h[?25lu[28;72H4-21[21;21H[34h[?25h[?25ls[28;72H5-22[21;22H[34h[?25h[?25lh[28;72H6-23[21;23H[34h[?25h[?25l[28;72H7-24[21;24H[34h[?25h[?25lc[28;72H8-25[21;25H[34h[?25h[?25la[28;72H9-26[21;26H[34h[?25h[?25lc[28;71H20-27[21;27H[34h[?25h[?25lh[28;72H1-28[21;28H[34h[?25h[?25le[28;72H2-29[21;29H[34h[?25h[28;1H[K[?25l[28;68H21,21-28      Top[21;28H[34h[?25h[?25l[28;58H^[[21;28H[28;58H  [21;28H[28;58H^[[21;28H[28;58H  [21;28H[34h[?25h[?25l[28;58Hj[21;28H[28;58H [22;21H[28;69H2,14-21[22;21H[34h[?25h[?25l[28;58Hj[22;21H[28;58H [22;28H[1;27r[27;1H
+[1;28r[28;68H[K[28;68H23,21-28[7C0%[22;28H[34h[?25h[?25l[28;58Hj[22;28H[28;58H [22;28H[1;27r[27;1H
+[1;28r[27;1H[34m### set iface variables[0m[28;68H[K[28;68H24,21-28[7C1%[22;28H[34h[?25h[?25l[28;58H:[22;28H[28;58H[K[28;1H:[34h[?25hx[?25l"cast" 221L, 7571B written
+[?1l>[34h[?25h[?1049lkshoestring@fractal:~/scripts\[?2004h[1;33mshoestring[1;32m@fractal [1;32mscripts $[m cd ..
+[?2004lkshoestring@fractal:~\[?2004h[1;33mshoestring[1;32m@fractal [1;32m~ $[m ls
+[?2004larchxml-bootissue  [0m[01;34mcheatnotes[0m      [01;32mcos-node-setup-file20250116[0m  [01;34mscripts[0m
+[01;34mbin[0m                [01;34mcos-node-setup[0m  null                         ustack
+kshoestring@fractal:~\[?2004h[1;33mshoestring[1;32m@fractal [1;32m~ $[m scp 1[Kshoestring@19[K72.22.3.21:cos-not[Kde-setup/openstack_passwords  ./
+[?2004lThe authenticity of host '172.22.3.21 (172.22.3.21)' can't be established.
+ED25519 key fingerprint is SHA256:88t6xTVp926PsgDnT/fl1qYkSJm1ssEjpjeuWe84RHE.
+This host key is known by the following other names/addresses:
+    ~/.ssh/known_hosts:18: 172.22.3.11
+    ~/.ssh/known_hosts:21: 172.22.2.99
+    ~/.ssh/known_hosts:26: 172.22.3.99
+    ~/.ssh/known_hosts:27: 172.22.3.98
+    ~/.ssh/known_hosts:28: sandbox.lan
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '172.22.3.21' (ED25519) to the list of known hosts.
+shoestring@172.22.3.21's password: 
+openstack_passwords                                  0%    0     0.0KB/s   --:-- ETAopenstack_passwords                                100% 1371   795.7KB/s   00:00    
+kshoestring@fractal:~\[?2004h[1;33mshoestring[1;32m@fractal [1;32m~ $[m ls
+[?2004larchxml-bootissue  [0m[01;34mcos-node-setup[0m               openstack_passwords
+[01;34mbin[0m                [01;32mcos-node-setup-file20250116[0m  [01;34mscripts[0m
+[01;34mcheatnotes[0m         null                         ustack
+kshoestring@fractal:~\[?2004h[1;33mshoestring[1;32m@fractal [1;32m~ $[m [K[1;33mshoestring[1;32m@fractal [1;32m~ $[m [K[1;33mshoestring[1;32m@fractal [1;32m~ $[m [K[1;33mshoestring[1;32m@fractal [1;32m~ $[m [K[1;33mshoestring[1;32m@fractal [1;32m~ $[m [K[1;33mshoestring[1;32m@fractal [1;32m~ $[m exit
+[?2004lexit
+
+Script done on 2025-02-09 13:03:27-06:00 [COMMAND_EXIT_CODE="0"]

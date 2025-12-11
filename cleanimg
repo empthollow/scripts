@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+# mount‑modify‑cleanup‑image.sh
+# -------------------------------------------------
+# 1. Verify root
+# 2. Attach image as a loop device (scan partitions)
+# 3. Mount the root partition
+# 4. Remove Pacman keys & keyring
+# 5. Install a key‑initialisation script in /etc/profile.d
+# 6. Delete any DHCP lease files (/run/*lease*)
+# 7. Remove machine‑id files (/etc/machine-id, /run/machine-id)
+# 8. Unmount and detach the loop device
+# -------------------------------------------------
+
+set -euo pipefail
+
+# ---------- 1. Root check ----------
+if [[ $EUID -ne 0 ]]; then
+    echo "Error: this script must be run as root." >&2
+    exit 1
+fi
+
+# ---------- 2. Input validation ----------
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 /path/to/disk-image" >&2
+    exit 1
+fi
+
+IMG="$1"
+if [[ ! -f "$IMG" ]]; then
+    echo "Error: image file not found: $IMG" >&2
+    exit 1
+fi
+
+# ---------- 3. Create temporary mount point ----------
+MNT=$(mktemp -d)
+cleanup() {
+    # Unmount if still mounted
+    if mountpoint -q "$MNT"; then
+        umount -l "$MNT"
+    fi
+    # Detach loop device if set
+    [[ -n "${LOOPDEV:-}" ]] && losetup -d "$LOOPDEV" 2>/dev/null || true
+    rm -rf "$MNT"
+}
+trap cleanup EXIT
+
+# ---------- 4. Attach image, scan partitions ----------
+# -f  : find first free loop device
+# -P  : create /dev/loopXpY devices for partitions
+# --show prints the loop device name
+LOOPDEV=$(losetup -fP --show "$IMG")
+echo "Attached $IMG as $LOOPDEV"
+
+# ---------- 5. Identify the root partition ----------
+# Heuristic: pick the largest partition (common for root)
+ROOT_PART=$(lsblk -nr -o NAME,SIZE "$LOOPDEV" | sort -k2 -h | tail -n1 | awk '{print $1}')
+ROOT_DEV="/dev/${ROOT_PART}"
+echo "Using $ROOT_DEV as the root filesystem"
+
+# ---------- 6. Mount the root partition ----------
+mount "$ROOT_DEV" "$MNT"
+echo "Mounted $ROOT_DEV at $MNT"
+
+# ---------- 7. Remove Pacman keys & keyring ----------
+rm -rf "$MNT/var/lib/pacman/local"
+rm -rf "$MNT/etc/pacman.d/gnupg"
+
+# ---------- 8. Install key‑initialisation script ----------
+UNIT_PATH="$MNT/etc/systemd/system/pacman-key-init.service"
+cat <<'EOF' > "$UNIT_PATH"
+[Unit]
+Description=Initialize Pacman keyring (run once)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pacman-key --init
+ExecStart=/usr/bin/pacman-key --populate archlinux
+ExecStart=/usr/bin/pacman -Sy
+# Disable the unit after a successful run so it never starts again
+ExecStartPost=/usr/bin/systemctl disable --now pacman-key-init.service
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable the unit for the first boot
+ln -s /etc/systemd/system/pacman-key-init.service \
+      "$MNT/etc/systemd/system/multi-user.target.wants/pacman-key-init.service"
+
+echo "Systemd unit installed and enabled at $UNIT_PATH"
+
+# ---------- 9. Remove DHCP lease files ----------
+find "$MNT/run" -type f -name '*lease*' -exec rm -f {} + || true
+
+# ---------- 10. Remove machine-id files ----------
+rm -f "$MNT/etc/machine-id" "$MNT/run/machine-id"
+
+# ---------- 11. Sync and finish ----------
+sync
+echo "Modifications complete."
+
+# ---------- 12. Unmount & detach (handled by trap) ----------
+umount "$MNT"
+losetup -d "$LOOPDEV"
+echo "Unmounted and detached loop device."
+

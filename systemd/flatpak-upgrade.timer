@@ -1,0 +1,11 @@
+[Unit]
+Description="flatpak upgrade timer"
+
+[Timer]
+OnBootSec=6min
+OnCalendar=Sat *-*-* 00:06:00
+Unit=flatpak-upgrade.service
+
+[Install]
+WantedBy=multi-user.target
+

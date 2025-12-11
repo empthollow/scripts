@@ -1,0 +1,6 @@
+[Unit]
+Description=pacman-upgrade
+[Service]
+User=root
+ExecStart=pacman -Syu --noconfirm
+ExecStartPost=paccache -ruk1

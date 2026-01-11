@@ -1,0 +1,13 @@
+#!/bin/bash
+
+ssh-keygen -R $( echo $1 | awk -F"@" '{ print $2 }')
+ssh-copy-id -i ~/.ssh/devkey.pub $1
+ssh -i ~/.ssh/devkey $1 sudo pacman -Sy --noconfirm git
+scp -i ~/.ssh/devkey ~/.ssh/github $1:.ssh/
+ssh -i ~/.ssh/devkey $1 'cat << EOF >> ~/.ssh/config
+Host github.com
+    User git
+    IdentityFile ~/.ssh/github
+EOF'
+ssh -i ~/.ssh/devkey -t $1 'git clone git@github.com:empthollow/peaberry.git'
+ssh -i ~/.ssh/devkey $1

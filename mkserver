@@ -27,12 +27,15 @@ Required:
   -s SERVER_NAME        Name of the server to create
 
 Options:
+  -c CONTROLLER_IP     Controller IP address (default: $CONTROLLER_IP)
+  -r OPENRC            OpenRC file name (default: $OPENRC)
   -k KEY_NAME          SSH key name (default: $KEY_NAME)
   -n NETWORK           Network name (default: $NETWORK)
   -i IMAGE             Image name (default: $IMAGE)
   -g SECURITY_GROUP    Security group (can be specified multiple times, default: ssh ping)
   -f FLAVOR            Flavor name (default: $FLAVOR)
   -v VOLUME_SIZE       Volume size in GB (default: $VOLUME_SIZE)
+  -e EXT_NET           External network name (default: $EXT_NET)
   -h                   Display this help message
 
 Examples:
@@ -46,8 +49,10 @@ EOF
 
 # Parse command line options
 SG_OVERRIDE=false
-while getopts "k:n:i:g:f:s:v:h" opt; do
+while getopts "c:r:k:n:i:g:f:s:v:e:h" opt; do
     case $opt in
+        c) CONTROLLER_IP="$OPTARG" ;;
+        r) OPENRC="$OPTARG" ;;
         k) KEY_NAME="$OPTARG" ;;
         n) NETWORK="$OPTARG" ;;
         i) IMAGE="$OPTARG" ;;
@@ -61,6 +66,7 @@ while getopts "k:n:i:g:f:s:v:h" opt; do
         f) FLAVOR="$OPTARG" ;;
         s) SERVER_NAME="$OPTARG" ;;
         v) VOLUME_SIZE="$OPTARG" ;;
+        e) EXT_NET="$OPTARG" ;;
         h) usage ;;
         \?) echo "Invalid option: -$OPTARG" >&2; usage ;;
         :) echo "Option -$OPTARG requires an argument." >&2; usage ;;

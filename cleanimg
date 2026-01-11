@@ -1,73 +1,68 @@
 #!/usr/bin/env bash
-# mount‑modify‑cleanup‑image.sh
+# Clean image script
 # -------------------------------------------------
-# 1. Verify root
-# 2. Attach image as a loop device (scan partitions)
-# 3. Mount the root partition
-# 4. Remove Pacman keys & keyring
-# 5. Install a key‑initialisation script in /etc/profile.d
-# 6. Delete any DHCP lease files (/run/*lease*)
-# 7. Remove machine‑id files (/etc/machine-id, /run/machine-id)
-# 8. Unmount and detach the loop device
+# Supports two modes:
+#   cleanimg remote <server>   - Run cleaning commands via SSH on remote server
+#   cleanimg path <directory>  - Run cleaning commands on a mounted directory
+# -------------------------------------------------
+# Operations performed:
+# 1. Remove Pacman keys & keyring
+# 2. Install a key‑initialisation systemd service
+# 3. Delete any DHCP lease files (/run/*lease*)
+# 4. Remove machine‑id files (/etc/machine-id, /run/machine-id)
 # -------------------------------------------------
 
 set -euo pipefail
 
-# ---------- 1. Root check ----------
+# ---------- Root check ----------
 if [[ $EUID -ne 0 ]]; then
     echo "Error: this script must be run as root." >&2
     exit 1
 fi
 
-# ---------- 2. Input validation ----------
-if [[ $# -ne 1 ]]; then
-    echo "Usage: $0 /path/to/disk-image" >&2
+# ---------- Input validation ----------
+if [[ $# -ne 2 ]]; then
+    echo "Usage: $0 [remote|path] <server|directory>" >&2
+    echo "  remote: run cleaning commands via SSH on remote server" >&2
+    echo "  path:   run cleaning commands on a mounted directory" >&2
     exit 1
 fi
 
-IMG="$1"
-if [[ ! -f "$IMG" ]]; then
-    echo "Error: image file not found: $IMG" >&2
+MODE="$1"
+TARGET="$2"
+
+# Validate mode
+if [[ "$MODE" != "remote" && "$MODE" != "path" ]]; then
+    echo "Error: MODE must be 'remote' or 'path'" >&2
     exit 1
 fi
 
-# ---------- 3. Create temporary mount point ----------
-MNT=$(mktemp -d)
-cleanup() {
-    # Unmount if still mounted
-    if mountpoint -q "$MNT"; then
-        umount -l "$MNT"
+# Validate target
+if [[ "$MODE" == "path" ]]; then
+    if [[ ! -d "$TARGET" ]]; then
+        echo "Error: directory not found: $TARGET" >&2
+        exit 1
     fi
-    # Detach loop device if set
-    [[ -n "${LOOPDEV:-}" ]] && losetup -d "$LOOPDEV" 2>/dev/null || true
-    rm -rf "$MNT"
-}
-trap cleanup EXIT
+    MNT="$TARGET"
+    echo "Using mounted directory: $MNT"
+elif [[ "$MODE" == "remote" ]]; then
+    echo "Using remote server: $TARGET"
+fi
 
-# ---------- 4. Attach image, scan partitions ----------
-# -f  : find first free loop device
-# -P  : create /dev/loopXpY devices for partitions
-# --show prints the loop device name
-LOOPDEV=$(losetup -fP --show "$IMG")
-echo "Attached $IMG as $LOOPDEV"
-
-# ---------- 5. Identify the root partition ----------
-# Heuristic: pick the largest partition (common for root)
-ROOT_PART=$(lsblk -nr -o NAME,SIZE "$LOOPDEV" | sort -k2 -h | tail -n1 | awk '{print $1}')
-ROOT_DEV="/dev/${ROOT_PART}"
-echo "Using $ROOT_DEV as the root filesystem"
-
-# ---------- 6. Mount the root partition ----------
-mount "$ROOT_DEV" "$MNT"
-echo "Mounted $ROOT_DEV at $MNT"
-
-# ---------- 7. Remove Pacman keys & keyring ----------
-rm -rf "$MNT/var/lib/pacman/local"
-rm -rf "$MNT/etc/pacman.d/gnupg"
-
-# ---------- 8. Install key‑initialisation script ----------
-UNIT_PATH="$MNT/etc/systemd/system/pacman-key-init.service"
-cat <<'EOF' > "$UNIT_PATH"
+# ---------- Define cleaning operations ----------
+run_cleaning() {
+    local target_root="$1"
+    
+    # Remove Pacman keys & keyring
+    echo "Removing Pacman keys and keyring..."
+    rm -rf "${target_root}/var/lib/pacman/local"
+    rm -rf "${target_root}/etc/pacman.d/gnupg"
+    
+    # Install key‑initialisation systemd service
+    echo "Installing Pacman key initialization systemd unit..."
+    local unit_path="${target_root}/etc/systemd/system/pacman-key-init.service"
+    mkdir -p "${target_root}/etc/systemd/system"
+    cat > "$unit_path" <<'UNIT_EOF'
 [Unit]
 Description=Initialize Pacman keyring (run once)
 After=network-online.target
@@ -83,21 +78,91 @@ ExecStartPost=/usr/bin/systemctl disable --now pacman-key-init.service
 
 [Install]
 WantedBy=multi-user.target
-EOF
+UNIT_EOF
+    
+    # Enable the unit for the first boot
+    mkdir -p "${target_root}/etc/systemd/system/multi-user.target.wants"
+    ln -sf /etc/systemd/system/pacman-key-init.service \
+            "${target_root}/etc/systemd/system/multi-user.target.wants/pacman-key-init.service"
+    
+    echo "Systemd unit installed and enabled at $unit_path"
+    
+    # Remove DHCP lease files from multiple locations
+    echo "Removing DHCP lease files..."
+    find "${target_root}/run" -type f -name '*lease*' -exec rm -f {} + || true
+    find "${target_root}/var/lib/dhcp" -type f -name '*lease*' -exec rm -f {} + || true
+    rm -rf "${target_root}/var/lib/NetworkManager/"* || true
+    
+    # Remove machine-id files
+    echo "Removing machine-id files..."
+    rm -f "${target_root}/etc/machine-id" "${target_root}/run/machine-id"
+}
+
+run_remote_cleaning() {
+    local server="$1"
+    
+    echo "Running cleaning commands on remote server: $server"
+    
+    # Run cleaning commands via SSH
+    ssh "$server" bash -s <<'SSH_EOF'
+#!/bin/bash
+set -euo pipefail
+
+# Remove Pacman keys & keyring
+echo "Removing Pacman keys and keyring..."
+sudo rm -rf /var/lib/pacman/local
+sudo rm -rf /etc/pacman.d/gnupg
+
+# Install key‑initialisation systemd service
+echo "Installing Pacman key initialization systemd unit..."
+sudo tee /etc/systemd/system/pacman-key-init.service > /dev/null <<'UNIT_EOF'
+[Unit]
+Description=Initialize Pacman keyring (run once)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pacman-key --init
+ExecStart=/usr/bin/pacman-key --populate archlinux
+ExecStart=/usr/bin/pacman -Sy
+# Disable the unit after a successful run so it never starts again
+ExecStartPost=/usr/bin/systemctl disable --now pacman-key-init.service
+
+[Install]
+WantedBy=multi-user.target
+UNIT_EOF
 
 # Enable the unit for the first boot
-ln -s /etc/systemd/system/pacman-key-init.service \
-      "$MNT/etc/systemd/system/multi-user.target.wants/pacman-key-init.service"
+sudo mkdir -p /etc/systemd/system/multi-user.target.wants
+sudo ln -sf /etc/systemd/system/pacman-key-init.service \
+            /etc/systemd/system/multi-user.target.wants/pacman-key-init.service
 
-echo "Systemd unit installed and enabled at $UNIT_PATH"
+echo "Systemd unit installed and enabled"
 
-# ---------- 9. Remove DHCP lease files ----------
-find "$MNT/run" -type f -name '*lease*' -exec rm -f {} + || true
+# Remove DHCP lease files from multiple locations
+echo "Removing DHCP lease files..."
+sudo find /run -type f -name '*lease*' -exec rm -f {} + || true
+sudo find /var/lib/dhcp -type f -name '*lease*' -exec rm -f {} + || true
+sudo rm -rf /var/lib/NetworkManager/* || true
 
-# ---------- 10. Remove machine-id files ----------
-rm -f "$MNT/etc/machine-id" "$MNT/run/machine-id"
+# Remove machine-id files
+echo "Removing machine-id files..."
+sudo rm -f /etc/machine-id /run/machine-id
 
-# ---------- 11. Sync and finish ----------
+echo "Remote cleaning complete"
+SSH_EOF
+}
+
+# ---------- Execute based on mode ----------
+if [[ "$MODE" == "path" ]]; then
+    run_cleaning "$MNT"
+    echo "Cleaning complete for directory: $MNT"
+elif [[ "$MODE" == "remote" ]]; then
+    run_remote_cleaning "$TARGET"
+fi
+
+echo "Done"
 sync
 echo "Modifications complete."
 

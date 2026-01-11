@@ -1,0 +1,109 @@
+#!/bin/bash
+
+# mkserver: Script to create a new OpenStack server with predefined parameters.
+
+set -e
+
+# Default values
+CONTROLLER_IP=172.22.3.21
+OPENRC=stacked-openrc
+IMAGE=peaberry1
+KEY_NAME=stardust
+NETWORK=argon
+SECURITY_GROUPS=("ssh" "ping")
+FLAVOR=m1.small
+SERVER_NAME=
+VOLUME_SIZE=20
+EXT_NET=stardust
+
+# Usage function
+usage() {
+    cat << EOF
+Usage: $(basename "$0") -s SERVER_NAME [OPTIONS]
+
+Create a new OpenStack server with specified parameters.
+
+Required:
+  -s SERVER_NAME        Name of the server to create
+
+Options:
+  -k KEY_NAME          SSH key name (default: $KEY_NAME)
+  -n NETWORK           Network name (default: $NETWORK)
+  -i IMAGE             Image name (default: $IMAGE)
+  -g SECURITY_GROUP    Security group (can be specified multiple times, default: ssh ping)
+  -f FLAVOR            Flavor name (default: $FLAVOR)
+  -v VOLUME_SIZE       Volume size in GB (default: $VOLUME_SIZE)
+  -h                   Display this help message
+
+Examples:
+  $(basename "$0") -s myserver
+  $(basename "$0") -s myserver -g ssh -g ping -g http -v 50
+  $(basename "$0") -s myserver -k mykey -n private-net -f m1.large
+
+EOF
+    exit 1
+}
+
+# Parse command line options
+SG_OVERRIDE=false
+while getopts "k:n:i:g:f:s:v:h" opt; do
+    case $opt in
+        k) KEY_NAME="$OPTARG" ;;
+        n) NETWORK="$OPTARG" ;;
+        i) IMAGE="$OPTARG" ;;
+        g) 
+            if [ "$SG_OVERRIDE" = false ]; then
+                SECURITY_GROUPS=()
+                SG_OVERRIDE=true
+            fi
+            SECURITY_GROUPS+=("$OPTARG")
+            ;;
+        f) FLAVOR="$OPTARG" ;;
+        s) SERVER_NAME="$OPTARG" ;;
+        v) VOLUME_SIZE="$OPTARG" ;;
+        h) usage ;;
+        \?) echo "Invalid option: -$OPTARG" >&2; usage ;;
+        :) echo "Option -$OPTARG requires an argument." >&2; usage ;;
+    esac
+done
+
+# Check required parameters
+if [ -z "$SERVER_NAME" ]; then
+    echo "Error: Server name is required (-s option)" >&2
+    usage
+fi
+
+# Validate volume size is a number
+if ! [[ "$VOLUME_SIZE" =~ ^[0-9]+$ ]]; then
+    echo "Error: Volume size must be a positive integer" >&2
+    exit 1
+fi
+
+# Function to execute OpenStack commands remotely
+remote_openstack() {
+    ssh -t "$CONTROLLER_IP" "source ~/cos-node-setup/$OPENRC && $*"
+}
+
+# Build security group arguments
+SG_ARGS=""
+for sg in "${SECURITY_GROUPS[@]}"; do
+    SG_ARGS="$SG_ARGS --security-group $sg"
+done
+
+# Create a new OpenStack server with specified parameters
+echo "Creating server: $SERVER_NAME"
+remote_openstack openstack server create \
+    --image "$IMAGE" \
+    --key-name "$KEY_NAME" \
+    --network "$NETWORK" \
+    $SG_ARGS \
+    --flavor "$FLAVOR" \
+    --block-device source_type=blank,dest_type=volume,volume_size="$VOLUME_SIZE",boot_index=-1 \
+    "$SERVER_NAME"
+
+# Create and assign floating IP
+echo "Assigning floating IP to $SERVER_NAME"
+FLOATING_IP=$(remote_openstack openstack floating ip create "$EXT_NET" -f value -c floating_ip_address)
+remote_openstack openstack server add floating ip "$SERVER_NAME" "$FLOATING_IP"
+
+echo "Server $SERVER_NAME created successfully with floating IP: $FLOATING_IP"

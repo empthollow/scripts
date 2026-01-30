@@ -85,20 +85,20 @@ if ! [[ "$VOLUME_SIZE" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-# Function to execute OpenStack commands remotely
-remote_openstack() {
-    ssh -t "$CONTROLLER_IP" "source ~/cos-node-setup/$OPENRC && $*"
-}
-
 # Build security group arguments
 SG_ARGS=""
 for sg in "${SECURITY_GROUPS[@]}"; do
     SG_ARGS="$SG_ARGS --security-group $sg"
 done
 
-# Create a new OpenStack server with specified parameters
+# Execute all OpenStack commands in a single SSH session
 echo "Creating server: $SERVER_NAME"
-remote_openstack openstack server create \
+FLOATING_IP=$(ssh "$CONTROLLER_IP" bash <<EOF
+set -e
+source ~/cos-node-setup/$OPENRC
+
+# Create the server
+openstack server create \
     --image "$IMAGE" \
     --key-name "$KEY_NAME" \
     --network "$NETWORK" \
@@ -107,9 +107,15 @@ remote_openstack openstack server create \
     --block-device source_type=blank,dest_type=volume,volume_size="$VOLUME_SIZE",boot_index=-1 \
     "$SERVER_NAME"
 
-# Create and assign floating IP
-echo "Assigning floating IP to $SERVER_NAME"
-FLOATING_IP=$(remote_openstack openstack floating ip create "$EXT_NET" -f value -c floating_ip_address)
-remote_openstack openstack server add floating ip "$SERVER_NAME" "$FLOATING_IP"
+# Create floating IP and capture it
+FLOATING_IP=\$(openstack floating ip create "$EXT_NET" -f value -c floating_ip_address)
+
+# Assign floating IP to server
+openstack server add floating ip "$SERVER_NAME" "\$FLOATING_IP"
+
+# Output the floating IP so we can capture it locally
+echo "\$FLOATING_IP"
+EOF
+)
 
 echo "Server $SERVER_NAME created successfully with floating IP: $FLOATING_IP"

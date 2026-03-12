@@ -15,6 +15,7 @@ FLAVOR=m1.small
 SERVER_NAME=
 VOLUME_SIZE=20
 EXT_NET=stardust
+BLOCK_DELETE=true
 
 # Usage function
 usage() {
@@ -36,12 +37,14 @@ Options:
   -f FLAVOR            Flavor name (default: $FLAVOR)
   -v VOLUME_SIZE       Volume size in GB (default: $VOLUME_SIZE)
   -e EXT_NET           External network name (default: $EXT_NET)
+  -p                   Preserve volume when server is deleted (default: delete volume)
   -h                   Display this help message
 
 Examples:
   $(basename "$0") -s myserver
   $(basename "$0") -s myserver -g ssh -g ping -g http -v 50
   $(basename "$0") -s myserver -k mykey -n private-net -f m1.large
+  $(basename "$0") -s myserver -p  # Preserve volume after server deletion
 
 EOF
     exit 1
@@ -49,7 +52,7 @@ EOF
 
 # Parse command line options
 SG_OVERRIDE=false
-while getopts "c:r:k:n:i:g:f:s:v:e:h" opt; do
+while getopts "c:r:k:n:i:g:f:s:v:e:ph" opt; do
     case $opt in
         c) CONTROLLER_IP="$OPTARG" ;;
         r) OPENRC="$OPTARG" ;;
@@ -67,6 +70,7 @@ while getopts "c:r:k:n:i:g:f:s:v:e:h" opt; do
         s) SERVER_NAME="$OPTARG" ;;
         v) VOLUME_SIZE="$OPTARG" ;;
         e) EXT_NET="$OPTARG" ;;
+        p) BLOCK_DELETE=false ;;
         h) usage ;;
         \?) echo "Invalid option: -$OPTARG" >&2; usage ;;
         :) echo "Option -$OPTARG requires an argument." >&2; usage ;;
@@ -93,19 +97,20 @@ done
 
 # Execute all OpenStack commands in a single SSH session
 echo "Creating server: $SERVER_NAME"
+
 FLOATING_IP=$(ssh "$CONTROLLER_IP" bash <<EOF
 set -e
 source ~/cos-node-setup/$OPENRC
+IMAGE_UUID=\$(openstack image show -f value -c id $IMAGE)
 
 # Create the server
 openstack server create \
-    --image "$IMAGE" \
     --key-name "$KEY_NAME" \
     --network "$NETWORK" \
     $SG_ARGS \
     --flavor "$FLAVOR" \
-    --block-device source_type=blank,dest_type=volume,volume_size="$VOLUME_SIZE",boot_index=-1 \
-    "$SERVER_NAME"
+    --block-device source_type=image,uuid="\$IMAGE_UUID",destination_type=volume,volume_size="$VOLUME_SIZE",boot_index=0,delete_on_termination=$BLOCK_DELETE \
+    "$SERVER_NAME" >/dev/null
 
 # Create floating IP and capture it
 FLOATING_IP=\$(openstack floating ip create "$EXT_NET" -f value -c floating_ip_address)
@@ -118,4 +123,55 @@ echo "\$FLOATING_IP"
 EOF
 )
 
-echo "Server $SERVER_NAME created successfully with floating IP: $FLOATING_IP"
+echo "Floating IP assigned: $FLOATING_IP"
+echo -n "Building instance... "
+
+# Start a spinner in the background while waiting for server to be ACTIVE
+(
+    spin='-\|/'
+    i=0
+    while kill -0 $$ 2>/dev/null; do
+        i=$(( (i+1) %4 ))
+        printf "\r${spin:$i:1} Building instance... "
+        sleep 0.1
+    done
+) &
+SPINNER_PID=$!
+
+# Set up trap to cleanup spinner on exit
+cleanup_spinner() {
+    if [ -n "$SPINNER_PID" ] && kill -0 "$SPINNER_PID" 2>/dev/null; then
+        kill "$SPINNER_PID" 2>/dev/null || true
+        wait "$SPINNER_PID" 2>/dev/null || true
+        printf "\r                                \r"
+    fi
+}
+trap cleanup_spinner EXIT
+
+# Wait for server to become ACTIVE
+if ! ssh "$CONTROLLER_IP" bash <<EOF
+set -e
+source ~/cos-node-setup/$OPENRC
+while true; do
+    STATUS=\$(openstack server show "$SERVER_NAME" -f value -c status)
+    if [ "\$STATUS" = "ACTIVE" ]; then
+        break
+    elif [ "\$STATUS" = "ERROR" ]; then
+        echo "Server entered ERROR state" >&2
+        exit 1
+    fi
+    sleep 2
+done
+EOF
+then
+    echo "Error: Failed to verify server status" >&2
+    exit 1
+fi
+
+# Stop the spinner
+kill $SPINNER_PID 2>/dev/null || true
+wait $SPINNER_PID 2>/dev/null || true
+
+# Clear the spinner line and show completion
+printf "\r✓ Build complete!                \n"
+echo "Server $SERVER_NAME is now active"

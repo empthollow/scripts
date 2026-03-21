@@ -8,6 +8,7 @@ set -e
 CONTROLLER_IP=172.22.3.21
 GLANCENAME=peaberry2
 SERVER_NAME=pb-cloud
+IMAGE_FILE=peaberry-espresso-arabica-cloud.qcow2
 RUN_ALL=false
 RUN_IMAGE=false
 RUN_CONTROLLER=false
@@ -66,10 +67,10 @@ fi
 imagetasks()
 {
 echo "=== Running imagetasks ==="
-ssh fractal.lan "sudo bash -s" << EOF
-    cp /var/lib/libvirt/images/${SERVER_NAME}-dev.qcow2 /var/lib/libvirt/images/vanilla/peaberry-espresso-arabica-cloud.qcow2
+ssh fractal.lan bash << EOF
+    sudo cp /var/lib/libvirt/images/pb-cloud-dev.qcow2 /var/lib/libvirt/images/vanilla/$IMAGE_FILE
     cd /home/shoestring/peaberry
-    ./roast -e image -i /var/lib/libvirt/images/vanilla/peaberry-espresso-arabica-cloud.qcow2
+    sudo ./roast -e image -i /var/lib/libvirt/images/vanilla/$IMAGE_FILE
 EOF
 echo "=== imagetasks completed ==="
 }
@@ -84,7 +85,7 @@ openstack server delete "$SERVER_NAME" || true
 echo "deleting $GLANCENAME image from glance..."
 openstack image delete "$GLANCENAME" || true
 echo "creating $GLANCENAME image..."
-openstack image create "$GLANCENAME" --disk-format qcow2 --container-format bare --public --file /mnt/images/peaberry-espresso-arabica-cloud.qcow2
+openstack image create "$GLANCENAME" --disk-format qcow2 --container-format bare --public --file /mnt/images/$IMAGE_FILE
 EOF
 echo "=== controllertasks completed ==="
 }

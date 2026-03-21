@@ -1,0 +1,111 @@
+#!/bin/bash
+
+# dagr: Script to deploy and create glance image and server
+
+set -e
+
+# Default values
+CONTROLLER_IP=172.22.3.21
+GLANCENAME=peaberry2
+SERVER_NAME=pb-cloud
+RUN_ALL=false
+RUN_IMAGE=false
+RUN_CONTROLLER=false
+RUN_SERVER=false
+
+# Usage function
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Deploy image, create glance image, and create OpenStack server.
+
+Options:
+  -s SERVER_NAME       Server name (default: $SERVER_NAME)
+  -i GLANCENAME        Glance image name (default: $GLANCENAME)
+  -c CONTROLLER_IP     Controller IP address (default: $CONTROLLER_IP)
+  -a                   Run all tasks in sequence (imagetasks, controllertasks, makeserver)
+  -1                   Run imagetasks only
+  -2                   Run controllertasks only
+  -3                   Run makeserver only
+  -h                   Display this help message
+
+Examples:
+  $(basename "$0") -a                              # Run all tasks with defaults
+  $(basename "$0") -s myserver -i myimage -a       # Run all tasks with custom names
+  $(basename "$0") -s myserver -i myimage -1       # Run imagetasks only
+  $(basename "$0") -s myserver -i myimage -2       # Run controllertasks only
+  $(basename "$0") -s myserver -i myimage -3       # Run makeserver only
+
+EOF
+    exit 1
+}
+
+# Parse command line options
+while getopts "s:i:c:a123h" opt; do
+    case $opt in
+        s) SERVER_NAME="$OPTARG" ;;
+        i) GLANCENAME="$OPTARG" ;;
+        c) CONTROLLER_IP="$OPTARG" ;;
+        a) RUN_ALL=true ;;
+        1) RUN_IMAGE=true ;;
+        2) RUN_CONTROLLER=true ;;
+        3) RUN_SERVER=true ;;
+        h) usage ;;
+        \?) echo "Invalid option: -$OPTARG" >&2; usage ;;
+        :) echo "Option -$OPTARG requires an argument." >&2; usage ;;
+    esac
+done
+
+# Check if any action is requested
+if [ "$RUN_ALL" = false ] && [ "$RUN_IMAGE" = false ] && [ "$RUN_CONTROLLER" = false ] && [ "$RUN_SERVER" = false ]; then
+    echo "Error: No action specified. Use -a to run all tasks, or -1, -2, -3 for individual tasks." >&2
+    usage
+fi
+
+imagetasks()
+{
+echo "=== Running imagetasks ==="
+ssh fractal.lan "sudo bash -s" << EOF
+    cp /var/lib/libvirt/images/${SERVER_NAME}-dev.qcow2 /var/lib/libvirt/images/vanilla/peaberry-espresso-arabica-cloud.qcow2
+    cd /home/shoestring/peaberry
+    ./roast -e image -i /var/lib/libvirt/images/vanilla/peaberry-espresso-arabica-cloud.qcow2
+EOF
+echo "=== imagetasks completed ==="
+}
+
+controllertasks()
+{
+echo "=== Running controllertasks ==="
+ssh "$CONTROLLER_IP" bash <<EOF
+source cos-node-setup/stacked-openrc
+echo "deleting $SERVER_NAME server..."
+openstack server delete "$SERVER_NAME" || true
+echo "deleting $GLANCENAME image from glance..."
+openstack image delete "$GLANCENAME" || true
+echo "creating $GLANCENAME image..."
+openstack image create "$GLANCENAME" --disk-format qcow2 --container-format bare --public --file /mnt/images/peaberry-espresso-arabica-cloud.qcow2
+EOF
+echo "=== controllertasks completed ==="
+}
+
+makeserver()
+{
+echo "=== Running makeserver ==="
+mkserver -s "$SERVER_NAME" -i "$GLANCENAME"
+echo "=== makeserver completed ==="
+}
+
+# Main execution section
+if [ "$RUN_ALL" = true ]; then
+    imagetasks
+    controllertasks
+    makeserver
+else
+    [ "$RUN_IMAGE" = true ] && imagetasks
+    [ "$RUN_CONTROLLER" = true ] && controllertasks
+    [ "$RUN_SERVER" = true ] && makeserver
+fi
+
+echo ""
+echo "All requested tasks completed successfully!"

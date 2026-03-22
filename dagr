@@ -72,7 +72,7 @@ echo "copying ${SERVER_NAME}-dev.qcow2 to vanilla/$IMAGE_FILE..."
 sudo cp /var/lib/libvirt/images/${SERVER_NAME}-dev.qcow2 /var/lib/libvirt/images/vanilla/$IMAGE_FILE
 echo "running roast on $IMAGE_FILE..."
 cd /home/shoestring/peaberry
-sudo ./roast -e image -i /var/lib/libvirt/images/vanilla/$IMAGE_FILE
+sudo ./roast resize -e image -i /var/lib/libvirt/images/vanilla/$IMAGE_FILE
 EOF
 echo "=== imagetasks completed ==="
 }

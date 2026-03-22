@@ -343,9 +343,14 @@ printf "%-38s %-30s %-10s %-15s\n" "------------------------------------" "-----
 
 # Get volume list and format output
 openstack volume list --status available -c 'ID' -c 'Name' -c 'Size' -c 'Status' -f value | while read -r vol_id vol_name vol_size vol_status; do
-    # Handle empty names
-    if [ -z "\$vol_name" ] || [ "\$vol_name" = "None" ]; then
-        vol_name="(unnamed)"
+    # Handle missing names - when name is blank, fields shift
+    if [ -z "\$vol_status" ]; then
+        # Only 3 fields: ID, Size, Status (no name)
+        vol_status="\$vol_size"
+        vol_size="\$vol_name"
+        vol_name="none"
+    elif [ -z "\$vol_name" ] || [ "\$vol_name" = "None" ]; then
+        vol_name="none"
     fi
     printf "%-38s %-30s %-10s %-15s\n" "\$vol_id" "\$vol_name" "\$vol_size" "\$vol_status"
 done

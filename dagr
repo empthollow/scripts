@@ -21,6 +21,7 @@ Multi-purpose OpenStack management tool.
 Commands:
   spawn    Deploy image, create glance image, and spawn OpenStack server
   fip      Manage floating IPs (list/delete unused IPs)
+  vol      Manage volumes (list/delete unused volumes)
 
 Options:
   -h       Display this help message
@@ -29,6 +30,8 @@ Examples:
   $(basename "$0") spawn -a                    # Run all spawn tasks
   $(basename "$0") fip -l                      # List unused floating IPs
   $(basename "$0") fip -d                      # Delete unused floating IPs
+  $(basename "$0") vol -l                      # List unused volumes
+  $(basename "$0") vol -d                      # Delete unused volumes
 
 Run '$(basename "$0") <command> -h' for more information on a command.
 
@@ -83,6 +86,29 @@ Examples:
   $(basename "$0") fip -l                      # List all unassigned floating IPs
   $(basename "$0") fip -d                      # Delete all unassigned floating IPs
   $(basename "$0") fip -c 10.0.0.5 -l          # List IPs on different controller
+
+EOF
+    exit 1
+}
+
+# VOL subcommand usage
+usage_vol() {
+    cat << EOF
+Usage: $(basename "$0") vol [OPTIONS]
+
+Manage OpenStack volumes remotely.
+
+Options:
+  -c CONTROLLER_IP     Controller IP address (default: $CONTROLLER_IP)
+  -r OPENRC            OpenRC file name (default: $OPENRC)
+  -l                   List unused volumes
+  -d                   Delete unused volumes
+  -h                   Display this help message
+
+Examples:
+  $(basename "$0") vol -l                      # List all available (unused) volumes
+  $(basename "$0") vol -d                      # Delete all available (unused) volumes
+  $(basename "$0") vol -c 10.0.0.5 -l          # List volumes on different controller
 
 EOF
     exit 1
@@ -150,6 +176,31 @@ case $SUBCOMMAND in
         if [ -z "$ACTION" ]; then
             echo "Error: No action specified. Use -l to list or -d to delete unused floating IPs." >&2
             usage_fip
+        fi
+        ;;
+    vol)
+        # Parse vol options
+        ACTION=""
+        
+        if [ $# -eq 0 ]; then
+            usage_vol
+        fi
+        
+        while getopts "c:r:ldh" opt; do
+            case $opt in
+                c) CONTROLLER_IP="$OPTARG" ;;
+                r) OPENRC="$OPTARG" ;;
+                l) ACTION="list" ;;
+                d) ACTION="delete" ;;
+                h) usage_vol ;;
+                \?) echo "Invalid option: -$OPTARG" >&2; usage_vol ;;
+                :) echo "Option -$OPTARG requires an argument." >&2; usage_vol ;;
+            esac
+        done
+        
+        if [ -z "$ACTION" ]; then
+            echo "Error: No action specified. Use -l to list or -d to delete unused volumes." >&2
+            usage_vol
         fi
         ;;
     -h|--help|help)
@@ -254,6 +305,54 @@ EOF
 }
 
 # ============================================================================
+# VOL SUBCOMMAND FUNCTIONS
+# ============================================================================
+
+delete_unused_volumes() {
+    ssh "$CONTROLLER_IP" bash <<EOF
+set -e
+source ~/cos-node-setup/$OPENRC
+
+vol_list=\$(openstack volume list --status available -c 'ID' -f value)
+
+if [ -z "\$vol_list" ]; then
+    echo "No unused volumes to delete."
+else
+    echo "Deleting unused volumes..."
+    for vol_id in \$vol_list ; do
+        vol_name=\$(openstack volume show \$vol_id -c name -f value)
+        echo "Deleting volume: \$vol_id (\$vol_name)"
+        openstack volume delete \$vol_id
+    done
+    echo "Done."
+fi
+EOF
+}
+
+list_unused_volumes() {
+    ssh "$CONTROLLER_IP" bash <<EOF
+set -e
+source ~/cos-node-setup/$OPENRC
+
+echo "Available (Unused) Volumes:"
+echo ""
+
+# Print header
+printf "%-38s %-30s %-10s %-15s\n" "ID" "Name" "Size (GB)" "Status"
+printf "%-38s %-30s %-10s %-15s\n" "------------------------------------" "----------------------------" "----------" "---------------"
+
+# Get volume list and format output
+openstack volume list --status available -c 'ID' -c 'Name' -c 'Size' -c 'Status' -f value | while read -r vol_id vol_name vol_size vol_status; do
+    # Handle empty names
+    if [ -z "\$vol_name" ] || [ "\$vol_name" = "None" ]; then
+        vol_name="(unnamed)"
+    fi
+    printf "%-38s %-30s %-10s %-15s\n" "\$vol_id" "\$vol_name" "\$vol_size" "\$vol_status"
+done
+EOF
+}
+
+# ============================================================================
 # MAIN EXECUTION
 # ============================================================================
 
@@ -279,6 +378,16 @@ case $SUBCOMMAND in
                 ;;
             delete)
                 delete_unused_fips
+                ;;
+        esac
+        ;;
+    vol)
+        case $ACTION in
+            list)
+                list_unused_volumes
+                ;;
+            delete)
+                delete_unused_volumes
                 ;;
         esac
         ;;

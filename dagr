@@ -10,6 +10,7 @@ OPENRC=stacked-openrc
 GLANCENAME=peaberry2
 SERVER_NAME=pb-cloud
 IMAGE_FILE=peaberry-espresso-arabica-cloud.qcow2
+IMG_SERVER=fractal.lan
 
 # Main usage function
 usage_main() {
@@ -51,6 +52,7 @@ Options:
   -i GLANCENAME        Glance image name (default: $GLANCENAME)
   -c CONTROLLER_IP     Controller IP address (default: $CONTROLLER_IP)
   -r OPENRC            OpenRC file name (default: $OPENRC)
+  -m IMG_SERVER        Image server hostname/IP (default: $IMG_SERVER)
   -a                   Run all tasks in sequence (imagetasks, controllertasks, makeserver)
   -1                   Run imagetasks only
   -2                   Run controllertasks only
@@ -131,12 +133,13 @@ case $SUBCOMMAND in
         RUN_CONTROLLER=false
         RUN_SERVER=false
         
-        while getopts "s:i:c:r:a123h" opt; do
+        while getopts "s:i:c:r:m:a123h" opt; do
             case $opt in
                 s) SERVER_NAME="$OPTARG" ;;
                 i) GLANCENAME="$OPTARG" ;;
                 c) CONTROLLER_IP="$OPTARG" ;;
                 r) OPENRC="$OPTARG" ;;
+                m) IMG_SERVER="$OPTARG" ;;
                 a) RUN_ALL=true ;;
                 1) RUN_IMAGE=true ;;
                 2) RUN_CONTROLLER=true ;;
@@ -220,7 +223,7 @@ esac
 imagetasks()
 {
 echo "=== Running imagetasks ==="
-ssh fractal.lan bash << EOF
+ssh $IMG_SERVER bash << EOF
 echo "copying ${SERVER_NAME}-dev.qcow2 to vanilla/$IMAGE_FILE..."
 sudo cp /var/lib/libvirt/images/${SERVER_NAME}-dev.qcow2 /var/lib/libvirt/images/vanilla/$IMAGE_FILE
 echo "running roast on $IMAGE_FILE..."

@@ -1,23 +1,45 @@
 #!/bin/bash
 
-# dagr: Script to deploy and create glance image and server
+# dagr: Multi-purpose OpenStack management tool
 
 set -e
 
 # Default values
 CONTROLLER_IP=172.22.3.21
+OPENRC=stacked-openrc
 GLANCENAME=peaberry2
 SERVER_NAME=pb-cloud
 IMAGE_FILE=peaberry-espresso-arabica-cloud.qcow2
-RUN_ALL=false
-RUN_IMAGE=false
-RUN_CONTROLLER=false
-RUN_SERVER=false
 
-# Usage function
-usage() {
+# Main usage function
+usage_main() {
     cat << EOF
-Usage: $(basename "$0") [OPTIONS]
+Usage: $(basename "$0") <command> [options]
+
+Multi-purpose OpenStack management tool.
+
+Commands:
+  spawn    Deploy image, create glance image, and spawn OpenStack server
+  fip      Manage floating IPs (list/delete unused IPs)
+
+Options:
+  -h       Display this help message
+
+Examples:
+  $(basename "$0") spawn -a                    # Run all spawn tasks
+  $(basename "$0") fip -l                      # List unused floating IPs
+  $(basename "$0") fip -d                      # Delete unused floating IPs
+
+Run '$(basename "$0") <command> -h' for more information on a command.
+
+EOF
+    exit 1
+}
+
+# Spawn subcommand usage
+usage_spawn() {
+    cat << EOF
+Usage: $(basename "$0") spawn [OPTIONS]
 
 Deploy image, create glance image, and create OpenStack server.
 
@@ -25,6 +47,7 @@ Options:
   -s SERVER_NAME       Server name (default: $SERVER_NAME)
   -i GLANCENAME        Glance image name (default: $GLANCENAME)
   -c CONTROLLER_IP     Controller IP address (default: $CONTROLLER_IP)
+  -r OPENRC            OpenRC file name (default: $OPENRC)
   -a                   Run all tasks in sequence (imagetasks, controllertasks, makeserver)
   -1                   Run imagetasks only
   -2                   Run controllertasks only
@@ -32,37 +55,116 @@ Options:
   -h                   Display this help message
 
 Examples:
-  $(basename "$0") -a                              # Run all tasks with defaults
-  $(basename "$0") -s myserver -i myimage -a       # Run all tasks with custom names
-  $(basename "$0") -s myserver -i myimage -1       # Run imagetasks only
-  $(basename "$0") -s myserver -i myimage -2       # Run controllertasks only
-  $(basename "$0") -s myserver -i myimage -3       # Run makeserver only
+  $(basename "$0") spawn -a                              # Run all tasks with defaults
+  $(basename "$0") spawn -s myserver -i myimage -a       # Run all tasks with custom names
+  $(basename "$0") spawn -s myserver -i myimage -1       # Run imagetasks only
+  $(basename "$0") spawn -s myserver -i myimage -2       # Run controllertasks only
+  $(basename "$0") spawn -s myserver -i myimage -3       # Run makeserver only
 
 EOF
     exit 1
 }
 
-# Parse command line options
-while getopts "s:i:c:a123h" opt; do
-    case $opt in
-        s) SERVER_NAME="$OPTARG" ;;
-        i) GLANCENAME="$OPTARG" ;;
-        c) CONTROLLER_IP="$OPTARG" ;;
-        a) RUN_ALL=true ;;
-        1) RUN_IMAGE=true ;;
-        2) RUN_CONTROLLER=true ;;
-        3) RUN_SERVER=true ;;
-        h) usage ;;
-        \?) echo "Invalid option: -$OPTARG" >&2; usage ;;
-        :) echo "Option -$OPTARG requires an argument." >&2; usage ;;
-    esac
-done
+# FIP subcommand usage
+usage_fip() {
+    cat << EOF
+Usage: $(basename "$0") fip [OPTIONS]
 
-# Check if any action is requested
-if [ "$RUN_ALL" = false ] && [ "$RUN_IMAGE" = false ] && [ "$RUN_CONTROLLER" = false ] && [ "$RUN_SERVER" = false ]; then
-    echo "Error: No action specified. Use -a to run all tasks, or -1, -2, -3 for individual tasks." >&2
-    usage
+Manage OpenStack floating IPs remotely.
+
+Options:
+  -c CONTROLLER_IP     Controller IP address (default: $CONTROLLER_IP)
+  -r OPENRC            OpenRC file name (default: $OPENRC)
+  -l                   List unused floating IPs
+  -d                   Delete unused floating IPs
+  -h                   Display this help message
+
+Examples:
+  $(basename "$0") fip -l                      # List all unassigned floating IPs
+  $(basename "$0") fip -d                      # Delete all unassigned floating IPs
+  $(basename "$0") fip -c 10.0.0.5 -l          # List IPs on different controller
+
+EOF
+    exit 1
+}
+
+# Check if subcommand is provided
+if [ $# -eq 0 ]; then
+    usage_main
 fi
+
+SUBCOMMAND=$1
+shift
+
+# Route to appropriate subcommand
+case $SUBCOMMAND in
+    spawn)
+        # Parse spawn options
+        RUN_ALL=false
+        RUN_IMAGE=false
+        RUN_CONTROLLER=false
+        RUN_SERVER=false
+        
+        while getopts "s:i:c:r:a123h" opt; do
+            case $opt in
+                s) SERVER_NAME="$OPTARG" ;;
+                i) GLANCENAME="$OPTARG" ;;
+                c) CONTROLLER_IP="$OPTARG" ;;
+                r) OPENRC="$OPTARG" ;;
+                a) RUN_ALL=true ;;
+                1) RUN_IMAGE=true ;;
+                2) RUN_CONTROLLER=true ;;
+                3) RUN_SERVER=true ;;
+                h) usage_spawn ;;
+                \?) echo "Invalid option: -$OPTARG" >&2; usage_spawn ;;
+                :) echo "Option -$OPTARG requires an argument." >&2; usage_spawn ;;
+            esac
+        done
+        
+        # Check if any action is requested
+        if [ "$RUN_ALL" = false ] && [ "$RUN_IMAGE" = false ] && [ "$RUN_CONTROLLER" = false ] && [ "$RUN_SERVER" = false ]; then
+            echo "Error: No action specified. Use -a to run all tasks, or -1, -2, -3 for individual tasks." >&2
+            usage_spawn
+        fi
+        ;;
+    fip)
+        # Parse fip options
+        ACTION=""
+        
+        if [ $# -eq 0 ]; then
+            usage_fip
+        fi
+        
+        while getopts "c:r:ldh" opt; do
+            case $opt in
+                c) CONTROLLER_IP="$OPTARG" ;;
+                r) OPENRC="$OPTARG" ;;
+                l) ACTION="list" ;;
+                d) ACTION="delete" ;;
+                h) usage_fip ;;
+                \?) echo "Invalid option: -$OPTARG" >&2; usage_fip ;;
+                :) echo "Option -$OPTARG requires an argument." >&2; usage_fip ;;
+            esac
+        done
+        
+        if [ -z "$ACTION" ]; then
+            echo "Error: No action specified. Use -l to list or -d to delete unused floating IPs." >&2
+            usage_fip
+        fi
+        ;;
+    -h|--help|help)
+        usage_main
+        ;;
+    *)
+        echo "Error: Unknown command '$SUBCOMMAND'" >&2
+        echo ""
+        usage_main
+        ;;
+esac
+
+# ============================================================================
+# SPAWN SUBCOMMAND FUNCTIONS
+# ============================================================================
 
 imagetasks()
 {
@@ -81,7 +183,7 @@ controllertasks()
 {
 echo "=== Running controllertasks ==="
 ssh "$CONTROLLER_IP" bash <<EOF
-source cos-node-setup/stacked-openrc
+source ~/cos-node-setup/$OPENRC
 echo "deleting $SERVER_NAME server..."
 openstack server delete "$SERVER_NAME" || true
 echo "deleting $GLANCENAME image from glance..."
@@ -99,16 +201,85 @@ mkserver -s "$SERVER_NAME" -i "$GLANCENAME"
 echo "=== makeserver completed ==="
 }
 
-# Main execution section
-if [ "$RUN_ALL" = true ]; then
-    imagetasks
-    controllertasks
-    makeserver
-else
-    [ "$RUN_IMAGE" = true ] && imagetasks
-    [ "$RUN_CONTROLLER" = true ] && controllertasks
-    [ "$RUN_SERVER" = true ] && makeserver
-fi
+# ============================================================================
+# FIP SUBCOMMAND FUNCTIONS
+# ============================================================================
 
+delete_unused_fips() {
+    ssh "$CONTROLLER_IP" bash <<EOF
+set -e
+source ~/cos-node-setup/$OPENRC
+
+fip_list=\$(openstack floating ip list -c 'ID' -c 'Fixed IP Address' -f value | grep None | awk -F" " '{ printf "%s ", \$1 }')
+
+if [ -z "\$fip_list" ]; then
+    echo "No unused floating IPs to delete."
+else
+    echo "Deleting unused floating IPs..."
+    for fip_id in \$fip_list ; do
+        echo "Deleting floating IP: \$fip_id"
+        openstack floating ip delete \$fip_id
+    done
+    echo "Done."
+fi
+EOF
+}
+
+list_unused_fips() {
+    ssh "$CONTROLLER_IP" bash <<EOF
+set -e
+source ~/cos-node-setup/$OPENRC
+
+echo "Unassigned Floating IPs:"
 echo ""
-echo "All requested tasks completed successfully!"
+
+# Get network list for ID to name mapping
+declare -A network_names
+while read -r net_id net_name; do
+    if [ -n "\$net_id" ] && [ -n "\$net_name" ]; then
+        network_names["\$net_id"]="\$net_name"
+    fi
+done < <(openstack network list -c 'ID' -c 'Name' -f value)
+
+# Print header
+printf "%-38s %-20s %-20s\n" "ID" "Floating IP Address" "Floating Network"
+printf "%-38s %-20s %-20s\n" "------------------------------------" "-------------------" "-------------------"
+
+# Get floating IP list and format output
+openstack floating ip list -c 'ID' -c 'Floating IP Address' -c 'Fixed IP Address' -c 'Floating Network' -f value | grep None | while read -r fip_id floating_ip fixed_ip network_id; do
+    network_name="\${network_names[\$network_id]:-\$network_id}"
+    printf "%-38s %-20s %-20s\n" "\$fip_id" "\$floating_ip" "\$network_name"
+done
+EOF
+}
+
+# ============================================================================
+# MAIN EXECUTION
+# ============================================================================
+
+case $SUBCOMMAND in
+    spawn)
+        if [ "$RUN_ALL" = true ]; then
+            imagetasks
+            controllertasks
+            makeserver
+        else
+            [ "$RUN_IMAGE" = true ] && imagetasks
+            [ "$RUN_CONTROLLER" = true ] && controllertasks
+            [ "$RUN_SERVER" = true ] && makeserver
+        fi
+        
+        echo ""
+        echo "All requested tasks completed successfully!"
+        ;;
+    fip)
+        case $ACTION in
+            list)
+                list_unused_fips
+                ;;
+            delete)
+                delete_unused_fips
+                ;;
+        esac
+        ;;
+esac

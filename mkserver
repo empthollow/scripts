@@ -109,7 +109,7 @@ openstack server create \
     --network "$NETWORK" \
     $SG_ARGS \
     --flavor "$FLAVOR" \
-    --block-device source_type=image,uuid="\$IMAGE_UUID",destination_type=volume,volume_size="$VOLUME_SIZE",volume_name="${SERVER_NAME}-vol",boot_index=0,delete_on_termination=$BLOCK_DELETE \
+    --block-device source_type=image,uuid="\$IMAGE_UUID",destination_type=volume,volume_size="$VOLUME_SIZE",boot_index=0,delete_on_termination=$BLOCK_DELETE \
     "$SERVER_NAME" >/dev/null
 
 # Create floating IP and capture it

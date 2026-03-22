@@ -112,6 +112,22 @@ openstack server create \
     --block-device source_type=image,uuid="\$IMAGE_UUID",destination_type=volume,volume_size="$VOLUME_SIZE",boot_index=0,delete_on_termination=$BLOCK_DELETE \
     "$SERVER_NAME" >/dev/null
 
+# Wait for port to be available (max 30 seconds)
+echo "Waiting for network port to be ready..."
+for i in {1..30}; do
+    PORT_ID=\$(openstack port list --server "$SERVER_NAME" -f value -c ID 2>/dev/null | head -n 1)
+    if [ -n "\$PORT_ID" ]; then
+        echo "Port ready"
+        break
+    fi
+    sleep 1
+done
+
+if [ -z "\$PORT_ID" ]; then
+    echo "Error: No port found for server" >&2
+    exit 1
+fi
+
 # Create floating IP and capture it
 FLOATING_IP=\$(openstack floating ip create "$EXT_NET" -f value -c floating_ip_address)
 

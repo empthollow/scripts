@@ -160,9 +160,25 @@ case $SUBCOMMAND in
         fi
         
         # Check if IMG_SIZE is provided when running imagetasks
-        if ([ "$RUN_ALL" = true ] || [ "$RUN_IMAGE" = true ]) && [ -z "$IMG_SIZE" ]; then
-            echo "Error: Image size (-z) is required when running imagetasks." >&2
-            usage_spawn
+        if ([ "$RUN_ALL" = true ] || [ "$RUN_IMAGE" = true ]); then
+            if [ -z "$IMG_SIZE" ]; then
+                echo "Error: Image size (-z) is required when running imagetasks." >&2
+                usage_spawn
+            fi
+            
+            # Validate IMG_SIZE format and increment
+            if ! [[ "$IMG_SIZE" =~ ^[0-9]+(\.[0-9]+)?[GM]$ ]]; then
+                echo "Error: Image size must be a number followed by G or M (e.g., 5G, 10.5G, 512M)" >&2
+                usage_spawn
+            fi
+            
+            # Extract numeric part and validate it's a multiple of 0.5
+            numeric_size="${IMG_SIZE%[GM]}"
+            # Multiply by 2 and check if it's an integer (validates 0.5 increments)
+            if ! awk -v n="$numeric_size" 'BEGIN { exit (n * 2 != int(n * 2)) }'; then
+                echo "Error: Image size must be in increments of 0.5 (e.g., 5G, 5.5G, 6G, not 6.1G or 6.3G)" >&2
+                usage_spawn
+            fi
         fi
         ;;
     fip)

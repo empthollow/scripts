@@ -84,11 +84,14 @@ Options:
   -r OPENRC            OpenRC file name (default: $OPENRC)
   -l                   List unused floating IPs
   -d                   Delete unused floating IPs
+  -R                   Remove unused floating IPs from SSH known_hosts
   -h                   Display this help message
 
 Examples:
   $(basename "$0") fip -l                      # List all unassigned floating IPs
   $(basename "$0") fip -d                      # Delete all unassigned floating IPs
+  $(basename "$0") fip -R                      # Remove unused IPs from known_hosts
+  $(basename "$0") fip -d -R                   # Delete IPs and remove from known_hosts
   $(basename "$0") fip -c 10.0.0.5 -l          # List IPs on different controller
 
 EOF
@@ -184,25 +187,27 @@ case $SUBCOMMAND in
     fip)
         # Parse fip options
         ACTION=""
+        ACTION_REMOVE_KNOWN_HOSTS=false
         
         if [ $# -eq 0 ]; then
             usage_fip
         fi
         
-        while getopts "c:r:ldh" opt; do
+        while getopts "c:r:ldRh" opt; do
             case $opt in
                 c) CONTROLLER_IP="$OPTARG" ;;
                 r) OPENRC="$OPTARG" ;;
                 l) ACTION="list" ;;
                 d) ACTION="delete" ;;
+                R) ACTION_REMOVE_KNOWN_HOSTS=true ;;
                 h) usage_fip ;;
                 \?) echo "Invalid option: -$OPTARG" >&2; usage_fip ;;
                 :) echo "Option -$OPTARG requires an argument." >&2; usage_fip ;;
             esac
         done
         
-        if [ -z "$ACTION" ]; then
-            echo "Error: No action specified. Use -l to list or -d to delete unused floating IPs." >&2
+        if [ -z "$ACTION" ] && [ "$ACTION_REMOVE_KNOWN_HOSTS" = false ]; then
+            echo "Error: No action specified. Use -l to list, -d to delete, or -R to remove from known_hosts." >&2
             usage_fip
         fi
         ;;
@@ -332,6 +337,27 @@ done
 EOF
 }
 
+remove_fips_from_known_hosts() {
+    # Get list of unused floating IPs
+    unused_ips=$(ssh "$CONTROLLER_IP" bash <<EOF
+source ~/cos-node-setup/$OPENRC
+openstack floating ip list -c 'Floating IP Address' -c 'Fixed IP Address' -f value | grep None | awk '{print \$1}'
+EOF
+)
+
+    if [ -z "$unused_ips" ]; then
+        echo "No unused floating IPs to remove from known_hosts."
+        return
+    fi
+
+    echo "Removing unused floating IPs from SSH known_hosts..."
+    for ip in $unused_ips; do
+        echo "Removing $ip from known_hosts..."
+        ssh-keygen -R "$ip" 2>/dev/null || true
+    done
+    echo "Done."
+}
+
 # ============================================================================
 # VOL SUBCOMMAND FUNCTIONS
 # ============================================================================
@@ -412,6 +438,11 @@ case $SUBCOMMAND in
                 delete_unused_fips
                 ;;
         esac
+        
+        # Handle -R flag (can be used with or without -d)
+        if [ "$ACTION_REMOVE_KNOWN_HOSTS" = true ]; then
+            remove_fips_from_known_hosts
+        fi
         ;;
     vol)
         case $ACTION in

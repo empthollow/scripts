@@ -56,9 +56,9 @@ Options:
   -m IMG_SERVER        Image server hostname/IP (default: $IMG_SERVER)
   -z IMG_SIZE          Image resize size (required, e.g., 5G, 10G)
   -a                   Run all tasks in sequence (imagetasks, controllertasks, makeserver)
-  -1                   Run imagetasks only
-  -2                   Run controllertasks only
-  -3                   Run makeserver only
+  -1                   Run imagetasks only: SSH to IMG_SERVER, copy dev image to vanilla dir, and run roast resize
+  -2                   Run controllertasks only: SSH to controller, delete existing server/glance image, upload new glance image
+  -3                   Run makeserver only: spawn new OpenStack server via mkserver
   -h                   Display this help message
 
 Examples:

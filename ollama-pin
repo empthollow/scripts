@@ -8,5 +8,7 @@ done
 # This sends a request that loads the model weights into VRAM immediately
 curl http://localhost:11434/api/generate -d '{
   "model": "qwen2.5-coder:32b",
+  "prompt": "",
+  "stream": false,
   "keep_alive": -1
 }' > /dev/null &

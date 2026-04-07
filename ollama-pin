@@ -1,0 +1,12 @@
+#!/bin/bash
+# Wait for Ollama to be fully ready
+until curl -s http://localhost:11434/api/tags > /dev/null; do
+  sleep 2
+done
+
+# Pre-load and Pin Qwen 32B indefinitely
+# This sends a request that loads the model weights into VRAM immediately
+curl http://localhost:11434/api/generate -d '{
+  "model": "qwen2.5-coder:32b",
+  "keep_alive": -1
+}' > /dev/null &

@@ -1,0 +1,14 @@
+[Unit]
+Description=Pin Qwen Model to VRAM on Startup
+After=ollama.service
+Requires=ollama.service
+
+[Service]
+Type=oneshot
+# Replace $PATHTO with actual path
+User=jeremy 
+ExecStart=/$PATHTO/pin_models.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
